@@ -1,0 +1,79 @@
+[33mcommit d3a4575ec2b8ef9ae09d809f9303dc2f0d5f9c2d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Dominic Young <dom.young.101@gmail.com>
+Date:   Wed May 13 13:58:20 2026 +0100
+
+    Baseline snapshot - v1.3.0 post-Ed011
+
+ .gitignore                                         |    8 [32m+[m
+ COVERAGE_MATRIX.md                                 |  282 [32m++++[m
+ README.md                                          |  116 [32m++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED002.md  |  453 [32m++++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED003.md  |  451 [32m++++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED004.md  |  466 [32m++++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED005.md  |  468 [32m++++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED006.md  |  469 [32m++++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED007.md  |  435 [32m+++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED008.md  |  431 [32m+++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED009.md  |  432 [32m+++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED010.md  |  433 [32m+++++[m
+ SESSION_STATE LEGACY FILES/SESSION_STATE_ED034.md  |  522 [32m++++++[m
+ SESSION_STATE_ED011.md                             |  438 [32m+++++[m
+ Signalghost_Ed011_MORNING_SWEEP.pdf                |  618 [32m+++++++[m
+ .../AtollSphere_Ed002_LATE_NIGHT_SWEEP.pdf         |  512 [32m++++++[m
+ Sweep Archive/AtollSphere_Ed003_EVENING_SWEEP.pdf  |  397 [32m+++++[m
+ .../AtollSphere_Ed004_LATE_NIGHT_SWEEP.pdf         |  454 [32m++++++[m
+ Sweep Archive/AtollSphere_Ed005_MORNING_SWEEP.pdf  |  454 [32m++++++[m
+ .../AtollSphere_Ed006_AFTERNOON_SWEEP.pdf          |  550 [32m+++++++[m
+ .../AtollSphere_Ed007_AFTERNOON_SWEEP.pdf          |  531 [32m++++++[m
+ .../AtollSphere_Ed034_AFTERNOON_SWEEP.txt          |   99 [32m++[m
+ Sweep Archive/AtollSphere_Ed034_EVENING_SWEEP.txt  |  103 [32m++[m
+ .../AtollSphere_Ed034_LATE_NIGHT_SWEEP.pdf         |  569 [32m+++++++[m
+ .../AtollSphere_Ed034_LATE_NIGHT_SWEEP.txt         |  396 [32m+++++[m
+ Sweep Archive/AtollSphere_Ed034_MORNING_SWEEP.pdf  |  550 [32m+++++++[m
+ .../Signalghost_Ed008_AFTERNOON_SWEEP.pdf          |  639 [32m++++++++[m
+ Sweep Archive/Signalghost_Ed009_EVENING_SWEEP.pdf  |  597 [32m+++++++[m
+ Sweep Archive/Signalghost_Ed010_EVENING_SWEEP.pdf  |  618 [32m+++++++[m
+ __pycache__/build_core.cpython-314.pyc             |  Bin [31m0[m -> [32m19600[m bytes
+ __pycache__/calibration_pipeline.cpython-314.pyc   |  Bin [31m0[m -> [32m39577[m bytes
+ __pycache__/calibration_state.cpython-314.pyc      |  Bin [31m0[m -> [32m17665[m bytes
+ __pycache__/chronology.cpython-314.pyc             |  Bin [31m0[m -> [32m5301[m bytes
+ __pycache__/config.cpython-314.pyc                 |  Bin [31m0[m -> [32m19281[m bytes
+ __pycache__/feed_analyzer.cpython-314.pyc          |  Bin [31m0[m -> [32m49259[m bytes
+ __pycache__/feeds.cpython-314.pyc                  |  Bin [31m0[m -> [32m23057[m bytes
+ __pycache__/gates.cpython-314.pyc                  |  Bin [31m0[m -> [32m18407[m bytes
+ __pycache__/handover.cpython-314.pyc               |  Bin [31m0[m -> [32m17649[m bytes
+ __pycache__/main.cpython-314.pyc                   |  Bin [31m0[m -> [32m2745[m bytes
+ __pycache__/models.cpython-314.pyc                 |  Bin [31m0[m -> [32m15922[m bytes
+ __pycache__/narration_client.cpython-314.pyc       |  Bin [31m0[m -> [32m55007[m bytes
+ __pycache__/pdf_builder.cpython-314.pyc            |  Bin [31m0[m -> [32m55365[m bytes
+ __pycache__/persistence.cpython-314.pyc            |  Bin [31m0[m -> [32m21021[m bytes
+ __pycache__/predictions.cpython-314.pyc            |  Bin [31m0[m -> [32m16813[m bytes
+ __pycache__/seed_ed01.cpython-314.pyc              |  Bin [31m0[m -> [32m15607[m bytes
+ __pycache__/session_executor.cpython-314.pyc       |  Bin [31m0[m -> [32m91863[m bytes
+ __pycache__/styles.cpython-314.pyc                 |  Bin [31m0[m -> [32m4823[m bytes
+ __pycache__/timestamping.cpython-314.pyc           |  Bin [31m0[m -> [32m5503[m bytes
+ atollsphere.db                                     |  Bin [31m0[m -> [32m552960[m bytes
+ build_core.py                                      |  436 [32m+++++[m
+ calibration_pipeline.py                            |  928 [32m+++++++++++[m
+ calibration_state.py                               |  332 [32m++++[m
+ chronology.py                                      |  120 [32m++[m
+ config.py                                          |  471 [32m++++++[m
+ feed_analyzer.py                                   |  984 [32m+++++++++++[m
+ feeds.py                                           |  414 [32m+++++[m
+ gates.py                                           |  431 [32m+++++[m
+ handover.py                                        |  325 [32m++++[m
+ main.py                                            |   59 [32m+[m
+ models.py                                          |  308 [32m++++[m
+ narration_client.py                                |  817 [32m++++++++++[m
+ pdf_builder.py                                     |  867 [32m++++++++++[m
+ persistence.py                                     |  463 [32m++++++[m
+ predictions.py                                     |  378 [32m+++++[m
+ projecthivemind-removebg-preview.png               |  Bin [31m0[m -> [32m40501[m bytes
+ projecthivemind.png                                |  Bin [31m0[m -> [32m153931[m bytes
+ requirements.txt                                   |    2 [32m+[m
+ seed_ed01.py                                       |  389 [32m+++++[m
+ session_executor.py                                | 1710 [32m++++++++++++++++++++[m
+ signalghost.png                                    |  Bin [31m0[m -> [32m1036531[m bytes
+ styles.py                                          |  112 [32m++[m
+ timestamping.py                                    |  105 [32m++[m
+ 72 files changed, 22142 insertions(+)

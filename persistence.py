@@ -10,7 +10,7 @@ import json
 import os
 from typing import List, Optional, Dict, Any
 
-DB_PATH = os.environ.get("ATOLLSPHERE_DB", "atollsphere.db")
+DB_PATH = os.environ.get("SIGNALGHOST_DB", os.environ.get("ATOLLSPHERE_DB", "atollsphere.db"))
 
 
 def get_connection() -> sqlite3.Connection:
@@ -77,7 +77,8 @@ def init_db():
         notes             TEXT DEFAULT '',
         resolution_yes    TEXT DEFAULT '',
         resolution_no     TEXT DEFAULT '',
-        resolution_source TEXT DEFAULT ''
+        resolution_source TEXT DEFAULT '',
+        tracked_hyp       TEXT DEFAULT ''
     )""")
 
     # ── PREDICTIONS (RESOLVED) ───────────────────────────────────────────
@@ -260,6 +261,7 @@ def init_db():
         last_verified   TEXT NOT NULL,
         ed_action       TEXT NOT NULL,
         staleness_days  INTEGER,
+        staleness_editions INTEGER DEFAULT 0,
         edition         INTEGER NOT NULL
     )""")
 
@@ -342,6 +344,21 @@ def init_db():
             conn.commit()
         except Exception:
             pass  # column already exists
+
+    # CF-1: tracked_hyp — links prediction fi to a specific hypothesis
+    for col in ["tracked_hyp"]:
+        try:
+            c.execute(f"ALTER TABLE predictions_open ADD COLUMN {col} TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass  # column already exists
+
+    # CF-3: staleness_editions — integer counter for carry-forward fact age
+    try:
+        c.execute("ALTER TABLE carry_forward_facts ADD COLUMN staleness_editions INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        pass  # column already exists
 
     conn.close()
 

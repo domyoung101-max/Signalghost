@@ -39,6 +39,7 @@ from predictions import (
     compute_all_scores, resolve_prediction, check_pmm_004,
     get_band_for_prediction,
     validate_all_open_predictions, check_pmm_001_named_source,
+    update_prediction_fi,
 )
 from pdf_builder import PDFBuilder
 from handover import generate_session_state, write_session_state
@@ -329,6 +330,27 @@ class SessionExecutor:
         print(f"  Feeds checked: {self.sweep_result['feeds_checked']}/{self.sweep_result['total_feeds']}")
         if self.sweep_result["bypass_required"]:
             print(f"  BYPASS REQUIRED: {len(self.sweep_result['bypass_feeds'])} feeds unchecked")
+
+        # ── STEP 3.5: MINIMUM FEED THRESHOLD (CF-4) ─────────────────────
+        # Block hollow editions from corrupting hypothesis state.
+        # Requires at least 12/18 feeds to return substantive content.
+        MIN_SUBSTANTIVE_FEEDS = 12
+        substantive_count = 0
+        for r in self.sweep_result["results"]:
+            findings = getattr(r, 'findings', '') or ''
+            if (findings
+                    and "NO NEW FINDINGS" not in findings
+                    and "API unavailable" not in findings
+                    and len(findings) > 30):
+                substantive_count += 1
+        print(f"  Substantive feeds: {substantive_count}/{self.sweep_result['total_feeds']}")
+        if substantive_count < MIN_SUBSTANTIVE_FEEDS:
+            msg = (f"FEED THRESHOLD GATE FAIL: Only {substantive_count}/{self.sweep_result['total_feeds']} "
+                   f"feeds returned substantive content (minimum {MIN_SUBSTANTIVE_FEEDS}). "
+                   f"Edition aborted to prevent hollow calibration. "
+                   f"Check API key, network, and feed availability before re-running.")
+            self._add_plm(msg)
+            raise RuntimeError(msg)
         print()
 
         # ── STEP 4: FEED ANALYSIS ────────────────────────────────────────
@@ -373,6 +395,17 @@ class SessionExecutor:
         print("[STEP 6] Running 13-stage calibration pipeline...")
         updated_hypotheses = self._run_calibration_pipeline(prior_hyps)
         print(f"  Processed {len(updated_hypotheses)} hypotheses")
+        print()
+
+        # ── STEP 6.5: DYNAMIC fi LINKAGE (CF-1) ─────────────────────────
+        # Update prediction fi values to match tracked hypothesis movement.
+        # Must run AFTER calibration (hypotheses are now at current estimates)
+        # and BEFORE resolution (Step 9 uses stored fi for Brier scoring).
+        print("[STEP 6.5] Updating prediction fi from tracked hypotheses...")
+        hyp_pt_map = {h.hyp_id: h.point_estimate for h in updated_hypotheses}
+        fi_updates = update_prediction_fi(hyp_pt_map)
+        for msg in fi_updates:
+            print(f"  {msg}")
         print()
 
         # ── STEP 7: PRE-PUBLICATION GATES ────────────────────────────────
@@ -1587,7 +1620,9 @@ class SessionExecutor:
         for cf in self.carry_forward_facts_updated:
             insert_row("carry_forward_facts", {"fact": cf.get("fact", ""),
                 "last_verified": cf.get("last_verified", ""),
-                "ed_action": cf.get("ed_action", ""), "edition": self.edition})
+                "ed_action": cf.get("ed_action", ""),
+                "staleness_editions": cf.get("staleness_editions", 0),
+                "edition": self.edition})
 
     def _add_plm(self, message):
         insert_row("plm_entries", {"entry_id": f"PLM-{self.edition:03d}-AUTO",

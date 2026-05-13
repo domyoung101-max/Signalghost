@@ -6,3 +6,7 @@
 *.db
 *.db-journal
 *.pdf
+
+*.db
+*.db-journal
+__pycache__/

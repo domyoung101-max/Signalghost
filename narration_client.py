@@ -93,7 +93,10 @@ def _call_api(prompt: str, system_msg: str = "", max_tokens: int = 2048) -> str:
                 time.sleep(wait)
         return "[Narration unavailable — rate limit exceeded after 5 attempts.]"
     except Exception as e:
-        return f"[Narration error: {str(e)[:100]}]"
+        # CF-5: Log error to console but return clean placeholder for PDF.
+        # Raw error strings must never appear in published output.
+        print(f"  NARRATION ERROR (logged, not published): {str(e)[:200]}")
+        return "[Analysis unavailable for this section. See next edition.]"
 
 
 # ═══════════════════════════════════════════════════════════════════════════

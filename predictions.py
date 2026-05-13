@@ -376,3 +376,59 @@ def check_pmm_001_named_source(pred: Dict, h1_completed: bool) -> Optional[str]:
             f"incentive analysis before publication."
         )
     return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CF-1: DYNAMIC fi LINKAGE
+# ═══════════════════════════════════════════════════════════════════════════
+
+def update_prediction_fi(hypotheses_map: Dict[str, float]) -> List[str]:
+    """CF-1: Update fi for all open predictions based on their tracked hypothesis.
+
+    When the calibration pipeline moves a hypothesis's point_estimate,
+    the linked prediction's fi must update to reflect the system's current
+    forecast. At resolution time, the stored fi is then the live estimate —
+    not a stale value from creation.
+
+    Args:
+        hypotheses_map: dict mapping hyp_id -> current point_estimate
+            e.g. {"H-C3": 0.69, "H-A1": 0.28, ...}
+
+    Returns:
+        List of log messages describing updates made.
+    """
+    from persistence import get_open_predictions, get_connection
+
+    preds = get_open_predictions()
+    log = []
+
+    conn = get_connection()
+    for pred in preds:
+        pred_ref = pred.get("pred_ref", "")
+        tracked = (pred.get("tracked_hyp", "") or "").strip()
+
+        if not tracked:
+            log.append(f"{pred_ref}: no tracked_hyp set — fi unchanged.")
+            continue
+
+        if tracked not in hypotheses_map:
+            log.append(f"{pred_ref}: tracked_hyp '{tracked}' not found in current hypotheses — fi unchanged.")
+            continue
+
+        new_pt = hypotheses_map[tracked]
+        old_fi = pred.get("fi")
+        old_fi_str = f"{old_fi:.4f}" if old_fi is not None else "None"
+
+        # Update fi to match tracked hypothesis point_estimate
+        conn.execute(
+            "UPDATE predictions_open SET fi = ? WHERE pred_ref = ?",
+            (round(new_pt, 4), pred_ref),
+        )
+        log.append(
+            f"{pred_ref}: fi updated {old_fi_str} → {new_pt:.4f} "
+            f"(tracking {tracked})."
+        )
+
+    conn.commit()
+    conn.close()
+    return log

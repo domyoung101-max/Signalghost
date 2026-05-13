@@ -370,13 +370,56 @@ class PDFBuilder:
 
         story.append(PageBreak())
 
+        # ── ACRONYM GLOSSARY (CF-7) ──────────────────────────────────────
+        story.append(Paragraph("SIGNALGHOST — GLOSSARY OF TERMS",
+                               styles['section_head']))
+        story.append(hr())
+        _glossary = [
+            ("PCP",     "Priority Case Protocol"),
+            ("TQL",     "Truth Quality Check"),
+            ("HPT",     "Heuristic Performance Tracking"),
+            ("PLM",     "Process Log Memo"),
+            ("PMM",     "Post-Mortem Memo (Predictive Mistake Memo)"),
+            ("CDIT",    "Case Detailed Intelligence Template"),
+            ("fi",      "Forecast probability (assigned by system)"),
+            ("oi",      "Outcome indicator (actual result: 0 or 1)"),
+            ("BS",      "Brier Score"),
+            ("LS",      "Log Score"),
+            ("SS",      "Spherical Score"),
+            ("LR",      "Likelihood Ratio"),
+            ("EMA",     "Exponential Moving Average"),
+            ("RL",      "Reinforcement Learning"),
+            ("H1\u2013H7", "Heuristic labels (H1=Incentive Mismatch, H2=Timing, "
+                        "H3=Beneficiary Asymmetry, H4=Narrative-Outcome Gap, "
+                        "H5=Contradiction, H6=Suppressed Intersection, H7=Anchoring)"),
+            ("S2\u2013S13", "Calibration pipeline stage numbers (13-stage)"),
+            ("AI-005\u2013012", "Architecture rule reference numbers"),
+            ("Gate 0.1\u20130.6", "Gate identifiers in the gate registry"),
+            ("Gate 5",  "Prediction resolution gate"),
+            ("Pt Est",  "Point Estimate"),
+            ("pp",      "Percentage points"),
+            ("Prop",    "Propagation (cross-case hypothesis adjustment)"),
+            ("Ed0XX",   "Edition number (e.g., Ed011 = Edition 11)"),
+            ("PRED-01-X", "Prediction reference (PRED-[batch]-[case])"),
+            ("H-A1",    "Hypothesis ID (H-[case][number])"),
+            ("GL U",    "General License U (OFAC oil waiver)"),
+            ("Conf",    "Confidence level"),
+        ]
+        story.append(simple_table(
+            ["Term", "Definition"],
+            [[a, d] for a, d in _glossary],
+            [28*mm, 142*mm], styles))
+        story.append(PageBreak())
+
         # ── SITUATION OVERVIEW ───────────────────────────────────────────
+        _page4_has_content = False
         if self.situation_overview:
             story.append(Paragraph("SITUATION OVERVIEW — {0}".format(self.gmt_str),
                                    styles['section_head']))
             story.append(hr())
             story.append(Paragraph(self.situation_overview, styles['body']))
             story.append(Spacer(1, 4*mm))
+            _page4_has_content = True
 
         # ── PCP STEP 1.5 ────────────────────────────────────────────────
         if self.pcp_step_1_5:
@@ -384,6 +427,7 @@ class PDFBuilder:
                                    styles['section_head']))
             story.append(Paragraph(self.pcp_step_1_5, styles['body']))
             story.append(Spacer(1, 4*mm))
+            _page4_has_content = True
 
         # ── H1 SATURATION CHECK ──────────────────────────────────────────
         if self.h1_saturation_check:
@@ -391,6 +435,7 @@ class PDFBuilder:
                                    styles['section_head']))
             story.append(Paragraph(self.h1_saturation_check, styles['body']))
             story.append(Spacer(1, 4*mm))
+            _page4_has_content = True
 
         # ── CALIBRATION MAP (Mandatory Item 2) ──────────────────────────
         for section in self.sections:
@@ -412,9 +457,12 @@ class PDFBuilder:
                     ["Hypothesis", "Prior", "New", "Pt Est", "Pipeline", "Basis"],
                     cal_rows, [18*mm, 22*mm, 22*mm, 16*mm, 36*mm, 56*mm], styles))
                 story.append(Spacer(1, 6*mm))
+                _page4_has_content = True
                 break
 
-        story.append(PageBreak())
+        # CF-6: Only break page if content was added — prevents blank page
+        if _page4_has_content:
+            story.append(PageBreak())
 
         # ── PER-CASE SECTIONS (FULL CDIT) ────────────────────────────────
         for case in self.active_cases:

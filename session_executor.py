@@ -59,6 +59,7 @@ from persistence import (
     get_all_plm, get_all_pmm, get_open_predictions,
     get_resolved_predictions, get_propagation_register,
     insert_row, fetch_all, seed_from_session_state,
+    get_hypothesis_trend,
 )
 from models import Hypothesis
 from config import DEVIATION_AUDIT_ITEMS, ARCHITECTURE_VERSION
@@ -1323,6 +1324,7 @@ class SessionExecutor:
         builder.add_calibration_map(cal_map)
 
         builder.add_hpt_block(fetch_all("hpt_entries"))
+        builder.set_hypothesis_trend(get_hypothesis_trend())
         builder.add_plm_section(get_all_plm())
         builder.add_pmm_section(get_all_pmm())
 

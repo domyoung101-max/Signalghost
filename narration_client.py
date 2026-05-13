@@ -86,7 +86,7 @@ def _call_api(prompt: str, system_msg: str = "", max_tokens: int = 2048) -> str:
                     messages=[{"role": "user", "content": prompt}],
                 )
                 time.sleep(3)
-                return message.content[0].text
+                return _clean_narration(message.content[0].text)
             except anthropic.RateLimitError:
                 wait = 10 * (attempt + 1)
                 print(f"Rate limited — waiting {wait}s (attempt {attempt + 1}/5)...")
@@ -97,6 +97,59 @@ def _call_api(prompt: str, system_msg: str = "", max_tokens: int = 2048) -> str:
         # Raw error strings must never appear in published output.
         print(f"  NARRATION ERROR (logged, not published): {str(e)[:200]}")
         return "[Analysis unavailable for this section. See next edition.]"
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# POST-PROCESSING: TRUNCATION CLEANUP
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Phrases that leak from the search/tool layer into narration output
+_TOOL_LEAK_PHRASES = [
+    "Based on my search results,",
+    "Based on my search results",
+    "I found Reuters reporting",
+    "I found Bloomberg reporting",
+    "I found AP reporting",
+    "Based on recent news searches,",
+    "Based on recent news searches",
+    "statement truncated in feed",
+    "I searched for",
+    "I was unable to find",
+    "Here is my analysis:",
+    "Here's my analysis:",
+]
+
+
+def _clean_narration(text: str) -> str:
+    """Clean truncated sentences and tool-layer artefacts from narration.
+
+    1. Strips incomplete final sentence (no terminal punctuation).
+    2. Removes tool-leak phrases that break analyst voice.
+    """
+    if not text or text.startswith("["):
+        return text  # placeholder messages, don't touch
+
+    # Remove tool-leak phrases
+    for phrase in _TOOL_LEAK_PHRASES:
+        text = text.replace(phrase, "")
+
+    # Clean up resulting double spaces
+    while "  " in text:
+        text = text.replace("  ", " ")
+
+    # Strip incomplete final sentence
+    text = text.rstrip()
+    if text and text[-1] not in ".!?\"'":
+        # Walk back to find the last complete sentence
+        last_period = max(text.rfind(". "), text.rfind(".\n"),
+                         text.rfind("! "), text.rfind("? "))
+        if last_period > len(text) * 0.5:
+            # Only trim if we're not losing more than half the text
+            text = text[:last_period + 1]
+        elif text[-1] not in ".!?":
+            text = text.rstrip(",;:— ") + "."
+
+    return text.strip()
 
 
 # ═══════════════════════════════════════════════════════════════════════════

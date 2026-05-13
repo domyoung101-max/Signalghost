@@ -93,6 +93,9 @@ class PDFBuilder:
         # Dict: case_id -> [{"section": str, "justification": str, "risk": str}]
         self.bypass_declarations: Dict[str, List[Dict]] = {}
 
+        # Cross-edition hypothesis time-series
+        self._hypothesis_trend: Dict = {}
+
     # ── MANDATORY ITEM SETTERS ───────────────────────────────────────────
 
     def add_brier_score_section(self, scores, brier_rows, per_band_lookup):
@@ -135,6 +138,12 @@ class PDFBuilder:
         self._mandatory_items[10] = True
 
     # ── ADDITIONAL CONTENT SETTERS ───────────────────────────────────────
+
+    def set_hypothesis_trend(self, trend_data: Dict):
+        """Set cross-edition hypothesis time-series data.
+        trend_data: dict from persistence.get_hypothesis_trend()
+        """
+        self._hypothesis_trend = trend_data
 
     def set_case_narrative(self, case_id: str, narrative: Dict[str, str]):
         self.case_narratives[case_id] = narrative
@@ -674,6 +683,47 @@ class PDFBuilder:
                     hpt_rows, [26*mm]*6, styles))
                 story.append(Spacer(1, 6*mm))
                 break
+
+        # ── HYPOTHESIS TREND (Cross-edition time-series) ─────────────────
+        if self._hypothesis_trend:
+            story.append(Paragraph(
+                "HYPOTHESIS TREND — CROSS-EDITION POINT ESTIMATES",
+                styles['section_head']))
+            story.append(hr())
+            # Build columns: Hyp | Ed001 | Ed002 | ... | EdNNN
+            all_editions = sorted(set(
+                e["edition"]
+                for entries in self._hypothesis_trend.values()
+                for e in entries
+            ))
+            # Show last 6 editions max to fit table width
+            display_eds = all_editions[-6:]
+            header = ["Hyp"] + [f"Ed{e:03d}" for e in display_eds] + ["Δ"]
+            trend_rows = []
+            for hid in sorted(self._hypothesis_trend.keys()):
+                entries = self._hypothesis_trend[hid]
+                ed_map = {e["edition"]: e["point_estimate"] for e in entries}
+                row = [hid]
+                pts_in_range = []
+                for ed in display_eds:
+                    pt = ed_map.get(ed)
+                    if pt is not None:
+                        row.append(f"{pt:.2f}")
+                        pts_in_range.append(pt)
+                    else:
+                        row.append("—")
+                # Delta: change from first to last displayed edition
+                if len(pts_in_range) >= 2:
+                    delta = pts_in_range[-1] - pts_in_range[0]
+                    sign = "+" if delta >= 0 else ""
+                    row.append(f"{sign}{delta:.2f}")
+                else:
+                    row.append("—")
+                trend_rows.append(row)
+            col_count = len(header)
+            col_w = [20*mm] + [22*mm] * (col_count - 2) + [18*mm]
+            story.append(simple_table(header, trend_rows, col_w, styles))
+            story.append(Spacer(1, 6*mm))
 
         # ── PLM (Mandatory Item 5) ───────────────────────────────────────
         for section in self.sections:

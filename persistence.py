@@ -478,3 +478,40 @@ def seed_from_session_state(session_data: Dict):
 
     conn.commit()
     conn.close()
+
+
+# ── HYPOTHESIS TREND (Cross-edition time-series) ────────────────────────────
+
+def get_hypothesis_trend(hyp_ids: List[str] = None) -> Dict[str, List[Dict]]:
+    """Return per-edition point estimates for each hypothesis.
+
+    Returns dict: hyp_id -> [{"edition": N, "point_estimate": X, "range_lower": L, "range_upper": U}, ...]
+    sorted by edition ascending.
+    """
+    conn = get_connection()
+    if hyp_ids:
+        placeholders = ",".join(["?"] * len(hyp_ids))
+        rows = conn.execute(
+            f"SELECT hyp_id, edition, point_estimate, range_lower, range_upper "
+            f"FROM hypotheses WHERE hyp_id IN ({placeholders}) ORDER BY hyp_id, edition",
+            hyp_ids
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT hyp_id, edition, point_estimate, range_lower, range_upper "
+            "FROM hypotheses ORDER BY hyp_id, edition"
+        ).fetchall()
+    conn.close()
+
+    trend = {}
+    for r in rows:
+        hid = r["hyp_id"]
+        if hid not in trend:
+            trend[hid] = []
+        trend[hid].append({
+            "edition": r["edition"],
+            "point_estimate": r["point_estimate"],
+            "range_lower": r["range_lower"],
+            "range_upper": r["range_upper"],
+        })
+    return trend

@@ -1,0 +1,396 @@
+========================================================================
+ATOLLSPHERE STRATEGIC INTELLIGENCE BRIEF
+EDITION 034 — LATE NIGHT SWEEP
+04 MAY 2026 — 2159 GMT 04 MAY 2026 — War Day 66
+========================================================================
+
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+--- ACTIVE CASES ---
+  Case A: TALKS DEADLOCKED [ESCALATING] MEDIUM
+  Case B: Hormuz CLOSED / Mine Clearance 6 Months [ESCALATING] HIGH
+  Case C: ESCALATING — Netanyahu Strike Order [ESCALATING] MEDIUM
+  Case D: GL U LAPSED [DEVELOPING] HIGH
+  Case E: Double Suppressor / Dual Propagation [ESCALATING] MEDIUM
+
+--- SITUATION OVERVIEW ---
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+--- PCP STEP 1.5 — NEW SIGNAL CHECK ---
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+--- H1 SATURATION CHECK ---
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+--- AI-007 CALIBRATION MAP ---
+  H-A1: 50-62% -> 50-56% pt=0.50 |  | 
+  H-A2: 5-10% -> 5-10% pt=0.07 |  | 
+  H-A3: 75-85% -> 75-85% pt=0.80 |  | 
+  H-B1: 12-22% -> 12-22% pt=0.17 |  | 
+  H-B2: 22-35% -> 22-35% pt=0.29 |  | 
+  H-B3: 38-50% -> 38-50% pt=0.44 |  | 
+  H-C1: 62-75% -> 62-75% pt=0.68 |  | 
+  H-C2: 15-24% -> 15-24% pt=0.20 |  | 
+  H-C3: 14-22% -> 14-22% pt=0.18 |  | 
+  H-D1: 0-0% -> 0-0% pt=0.00 |  | 
+  H-D2: 97-99% -> 97-99% pt=1.00 |  | 
+  H-D3: 2-5% -> 2-5% pt=0.04 |  | 
+  H-E1: 40-53% -> 40-53% pt=0.47 |  | 
+  H-E2: 32-46% -> 32-46% pt=0.38 |  | 
+  H-E3: 12-18% -> 12-18% pt=0.15 |  | 
+
+============================================================
+CASE A — TALKS DEADLOCKED [ESCALATING] [MEDIUM]
+============================================================
+
+PART 1 — FACT TABLE
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 2 — INCONGRUITY ANALYSIS
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 3 — HYPOTHESIS SET
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 4 — TRUTH QUALITY CHECK (TQL)
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 5 — DISCONFIRMATION
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 6 — FORWARD FLAG
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+DOMAIN QUALITY: [Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+============================================================
+CASE B — Hormuz CLOSED / Mine Clearance 6 Months [ESCALATING] [HIGH]
+============================================================
+
+PART 1 — FACT TABLE
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 2 — INCONGRUITY ANALYSIS
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 3 — HYPOTHESIS SET
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 4 — TRUTH QUALITY CHECK (TQL)
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 5 — DISCONFIRMATION
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 6 — FORWARD FLAG
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+DOMAIN QUALITY: [Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+============================================================
+CASE C — ESCALATING — Netanyahu Strike Order [ESCALATING] [MEDIUM]
+============================================================
+
+PART 1 — FACT TABLE
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 2 — INCONGRUITY ANALYSIS
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 3 — HYPOTHESIS SET
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 4 — TRUTH QUALITY CHECK (TQL)
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 5 — DISCONFIRMATION
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 6 — FORWARD FLAG
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+DOMAIN QUALITY: [Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+============================================================
+CASE D — GL U LAPSED [DEVELOPING] [HIGH]
+============================================================
+
+PART 1 — FACT TABLE
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 2 — INCONGRUITY ANALYSIS
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 3 — HYPOTHESIS SET
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 4 — TRUTH QUALITY CHECK (TQL)
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 5 — DISCONFIRMATION
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 6 — FORWARD FLAG
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+DOMAIN QUALITY: [Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+============================================================
+CASE E — Double Suppressor / Dual Propagation [ESCALATING] [MEDIUM]
+============================================================
+
+PART 1 — FACT TABLE
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 2 — INCONGRUITY ANALYSIS
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 3 — HYPOTHESIS SET
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 4 — TRUTH QUALITY CHECK (TQL)
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 5 — DISCONFIRMATION
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+PART 6 — FORWARD FLAG
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+DOMAIN QUALITY: [Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+--- CARRY-FORWARD FACTS ---
+  Raw API response (JSON parse failed):  | Trump Truth Social / White House official statements Tier 1. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  JSON parse error — check first feed in batch for raw respons | CENTCOM public affairs Tier 1. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  JSON parse error — check first feed in batch for raw respons | IDF official statements Tier 1. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  JSON parse error — check first feed in batch for raw respons | Iran SNSC / IRNA (named attribution) Tier 1. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  JSON parse error — check first feed in batch for raw respons | Named government spokesperson statements Tier 1. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | Reuters Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | AP Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | Bloomberg Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | Al Jazeera Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | NBC News live updates Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | CBS News live updates Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | NPR Tier 2. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | Tasnim News Agency (IRGC-linked) Tier 3. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | Mehr News Agency Tier 3. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | WANA News Agency Tier 3. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | House of Saud / Conflict Pulse Tier 3. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | Wikipedia Tier 4. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+  API error: Error code: 429 - {'type': 'error', 'error': {'ty | ACLED conflict monitor Tier 4. 2159 GMT 04 MAY 2026. CURRENT. | Re-verify next edition.
+
+--- CRITICAL WINDOWS ---
+[Narration error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request w]
+
+--- PREDICTION LOG — OPEN ---
+  PRED-034-A: Second round formally convenes | Before 30 Apr | RESOLVED Ed034
+  PRED-031-B: Case A talks produce formal Hormuz instrument | Before 30 Apr | RESOLVED Ed034
+  PRED-031-C: Lebanon 3-week ceasefire holds through ~14 May | ~14 May | AT RISK
+  PRED-031-D: OFAC enforcement or India Chabahar divestment conf | Before 15 May | PARTIALLY PROGRESSING
+  PRED-031-E: IRGC follow-on Yanbu/Petroline strike | Before 7 May | PENDING
+  PRED-030-B: Northwood deployment schedule published | Before 30 Apr | RESOLVED Ed034
+  PRED-030-A: Iran unified proposal + formal second round | Before 30 Apr | RESOLVED Ed034
+  PRED-029-B: Hormuz sustained transit 24h+ (unrestricted) | Ongoing | PENDING
+  PRED-025-C/026-B: Summit deployment plan and Northwood timeline | Ongoing | PARTIAL MAINTAINED
+  PRED-022-B: IRGC kinetic response to USN vessel | Through resolution | PARTIAL
+  PRED-025-B: Abdollahi total blockade activation | Through resolution | PENDING
+  PRED-006-A: GCC emergency meeting | Post-ceasefire | WATCH
+
+--- BRIER SCORE ---
+Brier Score: 0.3298 (n=19, DEGRADED)
+  PRED-022-C: fi=0.95 oi=1.0 err=0.0025
+  PRED-023-B: fi=0.95 oi=1.0 err=0.0025
+  PRED-026-D: fi=0.95 oi=1.0 err=0.0025
+  PRED-027-B: fi=0.55 oi=0.0 err=0.3025
+  PRED-028-B: fi=0.55 oi=0.0 err=0.3025
+  PRED-026-E: fi=0.65 oi=0.0 err=0.4225
+  PRED-025-C: fi=0.70 oi=0.5 err=0.0400
+  PRED-026-B: fi=0.70 oi=0.5 err=0.0400
+  PRED-022-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-023-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-024-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-025-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-028-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-029-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-031-A: fi=0.77 oi=0.0 err=0.5929
+  PRED-034-A: fi=0.50 oi=0.0 err=0.2500
+  PRED-031-B: fi=0.50 oi=0.0 err=0.2500
+  PRED-030-B: fi=0.50 oi=0.0 err=0.2500
+  PRED-030-A: fi=0.50 oi=0.0 err=0.2500
+
+--- HPT ---
+  Ed029 Evening: A=H6/H5/H1 B=H4/H5/H6 C=H6/H4/H1 D=H3/H6/H1 E=H6/H3/H1
+  Ed030 Morning: A=H6/H4/H5/H1 B=H4/H6/H1 C=H6/H4/H1 D=H3/H6/H1 E=H6/H3/H1
+  Ed031 Evening: A=H6/H4/H5-partial/H2/H1 B=H4/H6/H1 C=H6/H4/H1 D=H3/H6/H1 E=H6/H3/H1
+  Ed032 Morning: A=H4/H1/H6/H2/H5-partial B=H6/H4/H1 C=H6/H4 D=H3/H6/H1 E=H6/H3
+  Ed033 Evening: A=H4/H1/PMM-004/H5-partial B=H6/H1/H4 C=H4/H6/CP-flag D=H3/H6 E=H6/H3/propagation
+
+--- PLM ---
+  PLM-001: Build script pre-existed. Session resumed mid-build.
+  PLM-002: Session state truncated in chat. PDF built correctly.
+  PLM-003: flag_block() missing styles argument.
+  PLM-004: SESSION_STATE.md regenerated at operator request.
+  PLM-005: story.extend() required for flag_block()/source_block().
+  PLM-006: SESSION_STATE.md corrupted by operator tool.
+  PLM-007: AI-005 violation: analytical content in chat.
+  PLM-008: War Day shown as 57 — corrected to 56.
+  PLM-009: 10 missing items from Ed029 PDF. AI-011 introduced.
+  PLM-010: Nine calibration enhancements added. v1.3.0.
+  PLM-011: styles.py and build_core.py recreated from context.
+  PLM-012: Ed032 PDF never completed. Ed033 from Ed031 baseline.
+  PLM-013: Gates 0.2/0.3/0.4 absent across 33 editions. Identified by Dominic Young.
+
+--- PMM ---
+  PMM-001: PRED-012-B — CONTRADICTED — Named-source prediction without incentive analysis.
+  PMM-002: PRED-026-E — CONTRADICTED — First Yanbu strike carried PENDING through Ed026.
+  PMM-003: PRED-022-A through PRED-029-A (x6) — CONTRADICTED — H-A1 at 72-82% on Iranian-source cluster.
+  PMM-004: PRED-031-A — CONTRADICTED — H-A1 at 72-82% with active Tier 1 Iranian denial.
+
+--- POINT ESTIMATES ---
+  H-A1: 50-56% pt=0.50
+  H-A2: 5-10% pt=0.07
+  H-A3: 75-85% pt=0.80
+  H-B1: 12-22% pt=0.17
+  H-B2: 22-35% pt=0.29
+  H-B3: 38-50% pt=0.44
+  H-C1: 62-75% pt=0.68
+  H-C2: 15-24% pt=0.20
+  H-C3: 14-22% pt=0.18
+  H-D1: 0-0% pt=0.00
+  H-D2: 97-99% pt=1.00
+  H-D3: 2-5% pt=0.04
+  H-E1: 40-53% pt=0.47
+  H-E2: 32-46% pt=0.38
+  H-E3: 12-18% pt=0.15
+
+--- DEVIATION AUDIT — 28 ITEMS ---
+  [PASS] 1: 1. GMT timestamp captured from bash tool before any feed
+  [PASS] 2: 2. War day verified arithmetically
+  [PASS] 3: 3. War day verified online
+  [PASS] 4: 4. Sweep descriptor programmatically derived
+  [PASS] 5: 5. All 18 named feeds checked before analytical content written
+  [PASS] 6: 6. AI-005: all analytical content to PDF only
+  [PASS] 7: 7. AI-007 hard ceilings checked (85% cap)
+  [PASS] 8: 8. H7 anchoring risk checked for all material hypotheses
+  [PASS] 9: 9. AI-010 single-cluster H5 discount where triggered
+  [PASS] 10: 10. AI-012 12-stage pipeline executed in order
+  [PASS] 11: 11. Causal edge register updated (AI-012-1)
+  [PASS] 12: 12. Delta buffer appended (AI-012-2)
+  [PASS] 13: 13. Change point z-scores computed (AI-012-3)
+  [PASS] 14: 14. Correlation matrix updated (AI-012-4)
+  [PASS] 15: 15. Propagation register checked (AI-012-5)
+  [PASS] 16: 16. EMA errors updated (AI-012-7)
+  [PASS] 17: 17. Per-band lookup table checked (AI-012-9)
+  [PASS] 18: 18. Band adjustments applied (AI-012-8)
+  [PASS] 19: 19. RL Bandit Q-table noted (AI-012-6 — ADVISORY)
+  [PASS] 20: 20. All 10 mandatory PDF items present (AI-011)
+  [PASS] 21: 21. No blank pages
+  [PASS] 22: 22. HPT block present
+  [PASS] 23: 23. PLM section present in PDF body
+  [PASS] 24: 24. PMM section present in PDF body
+  [PASS] 25: 25. Bypass audit: no bypasses, no silent omissions
+  [PASS] 26: 26. Gate 0.2 Source Corroboration Applied Where Triggered
+  [PASS] 27: 27. Gate 0.3 Incentive Analysis Completion Verified
+  [PASS] 28: 28. Gate 0.4 Cross-Case Consistency Resolved
+
+--- PREDICTION LOG — RESOLVED (CUMULATIVE) ---
+  PRED-031-A: CONTRADICTED — Trump cancelled Witkoff/Kushner trip. PMM-004.
+  PRED-026-C: CONFIRMED — Lebanon 72-hr window closed. Gate 0.6.
+  PRED-028-C: CONFIRMED — Same basis.
+  PRED-015-A: PARTIAL — Trump extended ceasefire 21 April.
+  PRED-022-B-res: PARTIAL — IRGC seized non-USN vessels.
+  PRED-012-B: CONTRADICTED — PMM-001 triggered.
+  PRED-027-B: CONTRADICTED — Iran closed Hormuz 18 April.
+  PRED-028-B: CONTRADICTED — Same basis.
+  PRED-026-D: CONFIRMED — GL U lapsed.
+  PRED-023-B: CONFIRMED — Same basis.
+  PRED-022-C: CONFIRMED — Same basis.
+  PRED-026-E: CONTRADICTED — First Yanbu strike. PMM-002.
+  PRED-025-C-res: PARTIAL — Paris Summit confirmed. No deployment timeline.
+  PRED-026-B-res: PARTIAL — Named assets. No timeline.
+  PRED-022-E: AMBIGUOUS — Insufficient evidence.
+  PRED-027-E: CONTRADICTED — 22 April window closed without Yanbu strike.
+  PRED-028-E: CONTRADICTED — Same basis.
+  PRED-018-E: CONFIRMED — IRGC struck East-West Pipeline 8 April.
+  PRED-022-D: CONFIRMED — Same basis.
+  PRED-034-A: CONTRADICTED — Window closed 2026-04-30
+  PRED-031-B: CONTRADICTED — Window closed 2026-04-30
+  PRED-030-B: CONTRADICTED — Window closed 2026-04-30
+  PRED-030-A: CONTRADICTED — Window closed 2026-04-30
+
+--- SOURCES ---
+  SOURCE 1 — Trump Truth Social / White House official statements
+    TIER 1 — Government primary source
+    Raw API response (JSON parse failed): 
+    Incentive: Official government position — monitor for framing.
+  SOURCE 2 — CENTCOM public affairs
+    TIER 1 — Government primary source
+    JSON parse error — check first feed in batch for raw response
+    Incentive: Official government position — monitor for framing.
+  SOURCE 3 — IDF official statements
+    TIER 1 — Government primary source
+    JSON parse error — check first feed in batch for raw response
+    Incentive: Official government position — monitor for framing.
+  SOURCE 4 — Iran SNSC / IRNA (named attribution)
+    TIER 1 — Government primary source
+    JSON parse error — check first feed in batch for raw response
+    Incentive: Official government position — monitor for framing.
+  SOURCE 5 — Named government spokesperson statements
+    TIER 1 — Government primary source
+    JSON parse error — check first feed in batch for raw response
+    Incentive: Official government position — monitor for framing.
+  SOURCE 6 — Reuters
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 7 — AP
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 8 — Bloomberg
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 9 — Al Jazeera
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 10 — NBC News live updates
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 11 — CBS News live updates
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 12 — NPR
+    TIER 2 — Named journalist, editorial standards
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Commercial news incentive. Monitor for sourcing attribution.
+  SOURCE 13 — Tasnim News Agency (IRGC-linked)
+    TIER 3 — State-affiliated / corroboration required
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: State-affiliated editorial alignment. Zero governing weight without Tier 1/2 corroboration per Gate 0.2.
+  SOURCE 14 — Mehr News Agency
+    TIER 3 — State-affiliated / corroboration required
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: State-affiliated editorial alignment. Zero governing weight without Tier 1/2 corroboration per Gate 0.2.
+  SOURCE 15 — WANA News Agency
+    TIER 3 — State-affiliated / corroboration required
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: State-affiliated editorial alignment. Zero governing weight without Tier 1/2 corroboration per Gate 0.2.
+  SOURCE 16 — House of Saud / Conflict Pulse
+    TIER 3 — State-affiliated / corroboration required
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: State-affiliated editorial alignment. Zero governing weight without Tier 1/2 corroboration per Gate 0.2.
+  SOURCE 17 — Wikipedia
+    TIER 4 — Aggregator — directional only
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Aggregator — downstream from Tier 1/2 feeds. Cannot be load-bearing.
+  SOURCE 18 — ACLED conflict monitor
+    TIER 4 — Aggregator — directional only
+    API error: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "Thi
+    Incentive: Aggregator — downstream from Tier 1/2 feeds. Cannot be load-bearing.
+
+
+AtollSphere - Edition 034 - LATE NIGHT SWEEP - 04 MAY 2026 - 2159 GMT 04 MAY 2026 - v1.3.0 - War Day 66

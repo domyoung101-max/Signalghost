@@ -1,0 +1,103 @@
+========================================================================
+ATOLLSPHERE BRIEF — EDITION 034
+EVENING SWEEP
+04 MAY 2026 · 1715 GMT 04 MAY 2026 · War Day 66
+========================================================================
+
+--- BRIER SCORE ---
+Brier Score: 0.3298 (n=19)
+  PRED-022-C: fi=0.95 oi=1.0 err=0.0025
+  PRED-023-B: fi=0.95 oi=1.0 err=0.0025
+  PRED-026-D: fi=0.95 oi=1.0 err=0.0025
+  PRED-027-B: fi=0.55 oi=0.0 err=0.3025
+  PRED-028-B: fi=0.55 oi=0.0 err=0.3025
+  PRED-026-E: fi=0.65 oi=0.0 err=0.4225
+  PRED-025-C: fi=0.70 oi=0.5 err=0.0400
+  PRED-026-B: fi=0.70 oi=0.5 err=0.0400
+  PRED-022-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-023-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-024-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-025-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-028-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-029-A-x1: fi=0.77 oi=0.0 err=0.5929
+  PRED-031-A: fi=0.77 oi=0.0 err=0.5929
+  PRED-034-A: fi=0.50 oi=0.0 err=0.2500
+  PRED-031-B: fi=0.50 oi=0.0 err=0.2500
+  PRED-030-B: fi=0.50 oi=0.0 err=0.2500
+  PRED-030-A: fi=0.50 oi=0.0 err=0.2500
+
+--- CALIBRATION MAP ---
+  H-A1: 50-62% -> 50-56% pt=0.50
+  H-A2: 5-10% -> 5-10% pt=0.07
+  H-A3: 75-85% -> 75-85% pt=0.80
+  H-B1: 12-22% -> 12-22% pt=0.17
+  H-B2: 22-35% -> 22-35% pt=0.29
+  H-B3: 38-50% -> 38-50% pt=0.44
+  H-C1: 62-75% -> 62-75% pt=0.68
+  H-C2: 15-24% -> 15-24% pt=0.20
+  H-C3: 14-22% -> 14-22% pt=0.18
+  H-D1: 0-0% -> 0-0% pt=0.00
+  H-D2: 97-99% -> 97-99% pt=1.00
+  H-D3: 2-5% -> 2-5% pt=0.04
+  H-E1: 40-53% -> 40-53% pt=0.47
+  H-E2: 32-46% -> 32-46% pt=0.38
+  H-E3: 12-18% -> 12-18% pt=0.15
+
+--- HPT ---
+
+--- PLM ---
+
+--- PMM ---
+
+--- POINT ESTIMATES ---
+  H-A1: 50-56% pt=0.50
+  H-A2: 5-10% pt=0.07
+  H-A3: 75-85% pt=0.80
+  H-B1: 12-22% pt=0.17
+  H-B2: 22-35% pt=0.29
+  H-B3: 38-50% pt=0.44
+  H-C1: 62-75% pt=0.68
+  H-C2: 15-24% pt=0.20
+  H-C3: 14-22% pt=0.18
+  H-D1: 0-0% pt=0.00
+  H-D2: 97-99% pt=1.00
+  H-D3: 2-5% pt=0.04
+  H-E1: 40-53% pt=0.47
+  H-E2: 32-46% pt=0.38
+  H-E3: 12-18% pt=0.15
+
+--- DOMAIN QUALITY ---
+
+--- DEVIATION AUDIT ---
+  [PASS] 1: 1. GMT timestamp captured from bash tool before any feed
+  [PASS] 2: 2. War day verified arithmetically
+  [PASS] 3: 3. War day verified online
+  [PASS] 4: 4. Sweep descriptor programmatically derived
+  [PASS] 5: 5. All 18 named feeds checked before analytical content writ
+  [PASS] 6: 6. AI-005: all analytical content to PDF only
+  [PASS] 7: 7. AI-007 hard ceilings checked (85% cap)
+  [PASS] 8: 8. H7 anchoring risk checked for all material hypotheses
+  [PASS] 9: 9. AI-010 single-cluster H5 discount where triggered
+  [PASS] 10: 10. AI-012 12-stage pipeline executed in order
+  [PASS] 11: 11. Causal edge register updated (AI-012-1)
+  [PASS] 12: 12. Delta buffer appended (AI-012-2)
+  [PASS] 13: 13. Change point z-scores computed (AI-012-3)
+  [PASS] 14: 14. Correlation matrix updated (AI-012-4)
+  [PASS] 15: 15. Propagation register checked (AI-012-5)
+  [PASS] 16: 16. EMA errors updated (AI-012-7)
+  [PASS] 17: 17. Per-band lookup table checked (AI-012-9)
+  [PASS] 18: 18. Band adjustments applied (AI-012-8)
+  [PASS] 19: 19. RL Bandit Q-table noted (AI-012-6 — ADVISORY)
+  [PASS] 20: 20. All 10 mandatory PDF items present (AI-011)
+  [PASS] 21: 21. No blank pages
+  [PASS] 22: 22. HPT block present
+  [PASS] 23: 23. PLM section present in PDF body
+  [PASS] 24: 24. PMM section present in PDF body
+  [PASS] 25: 25. Bypass audit: no bypasses, no silent omissions
+  [PASS] 26: 26. Gate 0.2 Source Corroboration Applied Where Triggered
+  [PASS] 27: 27. Gate 0.3 Incentive Analysis Completion Verified
+  [PASS] 28: 28. Gate 0.4 Cross-Case Consistency Resolved
+
+--- PREDICTION LOG RESOLVED ---
+
+--- NARRATIVE ---

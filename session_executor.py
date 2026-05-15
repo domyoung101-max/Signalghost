@@ -402,6 +402,17 @@ class SessionExecutor:
         # Update prediction fi values to match tracked hypothesis movement.
         # Must run AFTER calibration (hypotheses are now at current estimates)
         # and BEFORE resolution (Step 9 uses stored fi for Brier scoring).
+        #
+        # CRITICAL: Snapshot fi BEFORE updating, so resolution uses the
+        # pre-calibration fi (the system's forecast ENTERING this edition,
+        # not the value computed during it). This prevents circular scoring.
+        self._pre_calibration_fi = {}
+        for pred in get_open_predictions():
+            ref = pred.get("pred_ref", "")
+            fi_val = pred.get("fi")
+            if ref and fi_val is not None:
+                self._pre_calibration_fi[ref] = float(fi_val)
+
         print("[STEP 6.5] Updating prediction fi from tracked hypotheses...")
         hyp_pt_map = {h.hyp_id: h.point_estimate for h in updated_hypotheses}
         fi_updates = update_prediction_fi(hyp_pt_map)
@@ -906,14 +917,17 @@ class SessionExecutor:
             if pred_ref in feed_resolutions:
                 rec = feed_resolutions[pred_ref]
                 outcome = rec.get("outcome", "")
-                # FIX (TIER 1.1): Use stored fi from prediction record, NOT
-                # the analyzer's invented value. The fi must be the confidence
-                # at time of prediction creation (Architecture Section 12.6).
-                stored_fi = pred.get("fi")
-                if stored_fi is None:
-                    print(f"  {pred_ref}: SKIPPED — no stored fi. Cannot resolve without fi.")
-                    continue
-                fi = float(stored_fi)
+                # Use pre-calibration fi (snapshot taken before Step 6.5).
+                # This ensures Brier scoring reflects the system's forecast
+                # ENTERING this edition, not the value computed during it.
+                fi = self._pre_calibration_fi.get(pred_ref)
+                if fi is None:
+                    stored_fi = pred.get("fi")
+                    if stored_fi is None:
+                        print(f"  {pred_ref}: SKIPPED — no stored fi. Cannot resolve without fi.")
+                        continue
+                    fi = float(stored_fi)
+                    print(f"  {pred_ref}: WARNING — no pre-calibration fi snapshot, using stored fi={fi:.4f}")
                 evidence = rec.get("evidence", "Feed analysis")
                 # FIX (TIER 1.3): Verify evidence meets the stored disconfirmation
                 # threshold. Don't accept analyzer's word for it.
@@ -956,13 +970,16 @@ class SessionExecutor:
 
             if deadline and current_date > deadline:
                 status = pred.get("status", "")
-                if status in ("NEAR-CONTRADICTED", "PENDING", "OPENED Ed033", "AT RISK"):
-                    # FIX (TIER 1.1): stored fi only — never invent
-                    stored_fi = pred.get("fi")
-                    if stored_fi is None:
-                        print(f"  {pred_ref}: SKIPPED — window closed but no stored fi.")
-                        continue
-                    fi = float(stored_fi)
+                if status in ("NEAR-CONTRADICTED", "PENDING", "OPENED Ed033", "AT RISK",
+                             "OPENED Ed01", "OPENED Ed001"):
+                    # Use pre-calibration fi snapshot
+                    fi = self._pre_calibration_fi.get(pred_ref)
+                    if fi is None:
+                        stored_fi = pred.get("fi")
+                        if stored_fi is None:
+                            print(f"  {pred_ref}: SKIPPED — window closed but no stored fi.")
+                            continue
+                        fi = float(stored_fi)
                     gate5 = gate_5_resolution_gate(
                         pred_ref=pred_ref, proposed_outcome="CONTRADICTED",
                         evidence=[{"source": "Window expiry", "tier": 0,

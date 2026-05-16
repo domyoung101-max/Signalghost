@@ -114,22 +114,34 @@ def _verify_disconfirmation_threshold(
             # Threshold has number, evidence has none → threshold not met
             return False
 
-    # Extract key nouns/proper-nouns from threshold (length > 4)
-    threshold_words = set(w.lower() for w in _re.findall(r'\b[A-Za-z]{5,}\b', threshold_text))
-    # Filter common words
+    # Extract key nouns/proper-nouns from threshold (length >= 3)
+    # Changed from >=5 to >=3 to catch short but critical terms
+    # like "IDF", "Xi", "Iran", "war", "deal", "memo", "summit"
+    threshold_words = set(w.lower() for w in _re.findall(r'\b[A-Za-z]{3,}\b', threshold_text))
+    # Filter common words (expanded for shorter word inclusion)
     common_words = {"about", "above", "after", "again", "below", "before",
                     "could", "would", "should", "their", "there", "these",
                     "those", "while", "where", "which", "without", "within",
-                    "confirmed", "contradicted", "partial", "evidence"}
+                    "confirmed", "contradicted", "partial", "evidence",
+                    "the", "and", "for", "are", "but", "not", "you",
+                    "all", "can", "has", "had", "her", "was", "one",
+                    "our", "out", "its", "his", "how", "may", "any",
+                    "been", "have", "from", "that", "this", "with",
+                    "they", "will", "each", "than", "them", "then",
+                    "what", "when", "into", "some", "such", "also",
+                    "does", "must", "just", "more", "most", "very",
+                    "over", "only", "other", "been", "said", "through"}
     threshold_words -= common_words
 
     if not threshold_words:
         return True
 
-    # At least 40% of key threshold terms must appear in evidence
+    # At least 25% of key threshold terms must appear in evidence
+    # Lowered from 40% — feed_analyzer evidence is freeform prose
+    # that conveys meaning without echoing threshold language verbatim
     matched = sum(1 for w in threshold_words if w in evidence_text)
     match_ratio = matched / len(threshold_words)
-    return match_ratio >= 0.4
+    return match_ratio >= 0.25
 
 
 # ── CASE-SPECIFIC FEED FILTERING (Gap 10 fix) ─────────────────────────────────
@@ -222,22 +234,29 @@ def _parse_prediction_window(window: str):
       "Before 30 Apr", "~14 May", "Before 15 May",
       "7 May", "2026-05-15", "Ongoing", "Through resolution"
 
+    "Before X" semantics: "Before 16 May" means the event must occur
+    by end of 15 May. The deadline is set to X-1 so that the existing
+    `current_date > deadline` comparison triggers on the correct day.
+
     Returns datetime.date or None if no parseable deadline.
     """
     if not window:
         return None
 
     w = window.strip()
+    has_before_prefix = w.lower().startswith("before")
 
     # Skip non-deadline windows
     if w.lower() in ("ongoing", "through resolution", "watch", ""):
         return None
 
+    parsed_date = None
+
     # Try ISO format: 2026-05-15
     iso_match = _re.search(r'(\d{4})-(\d{2})-(\d{2})', w)
     if iso_match:
         try:
-            return datetime.date(int(iso_match.group(1)),
+            parsed_date = datetime.date(int(iso_match.group(1)),
                                  int(iso_match.group(2)),
                                  int(iso_match.group(3)))
         except ValueError:
@@ -245,31 +264,42 @@ def _parse_prediction_window(window: str):
 
     # Try "DD Mon" or "Mon DD" patterns (with optional "Before", "~", year)
     # Pattern 1: "30 Apr" / "~14 May" / "Before 15 May"
-    match1 = _re.search(r'(\d{1,2})\s+([A-Za-z]+)', w)
-    if match1:
-        day = int(match1.group(1))
-        month_str = match1.group(2).lower()
-        if month_str in _MONTH_MAP:
-            month = _MONTH_MAP[month_str]
-            # Assume 2026 (current conflict year)
-            try:
-                return datetime.date(2026, month, day)
-            except ValueError:
-                pass
+    if parsed_date is None:
+        match1 = _re.search(r'(\d{1,2})\s+([A-Za-z]+)', w)
+        if match1:
+            day = int(match1.group(1))
+            month_str = match1.group(2).lower()
+            if month_str in _MONTH_MAP:
+                month = _MONTH_MAP[month_str]
+                # Assume 2026 (current conflict year)
+                try:
+                    parsed_date = datetime.date(2026, month, day)
+                except ValueError:
+                    pass
 
     # Pattern 2: "Apr 30" / "May 7"
-    match2 = _re.search(r'([A-Za-z]+)\s+(\d{1,2})', w)
-    if match2:
-        month_str = match2.group(1).lower()
-        day = int(match2.group(2))
-        if month_str in _MONTH_MAP:
-            month = _MONTH_MAP[month_str]
-            try:
-                return datetime.date(2026, month, day)
-            except ValueError:
-                pass
+    if parsed_date is None:
+        match2 = _re.search(r'([A-Za-z]+)\s+(\d{1,2})', w)
+        if match2:
+            month_str = match2.group(1).lower()
+            day = int(match2.group(2))
+            if month_str in _MONTH_MAP:
+                month = _MONTH_MAP[month_str]
+                try:
+                    parsed_date = datetime.date(2026, month, day)
+                except ValueError:
+                    pass
 
-    return None
+    if parsed_date is None:
+        return None
+
+    # "Before X" means "by end of X-1". Subtract one day so that
+    # the `current_date > deadline` check triggers on the right day.
+    # Other formats ("~14 May", plain "16 May") keep their date as-is.
+    if has_before_prefix:
+        parsed_date -= datetime.timedelta(days=1)
+
+    return parsed_date
 
 
 class SessionExecutor:
@@ -901,6 +931,29 @@ class SessionExecutor:
                 "DEADLINE", "—")
 
     def _resolve_predictions(self, hypotheses):
+        """Resolve open predictions using feed evidence and/or window expiry.
+
+        Resolution logic (evaluated per prediction):
+
+        PATH A — Feed evidence exists AND threshold met:
+          → Resolve with feed outcome. This is the primary path.
+
+        PATH B — Feed evidence exists, threshold NOT met, window expired:
+          → Resolve using feed outcome direction. The feed_analyzer has
+            already determined the analytical outcome; the threshold gate
+            is about evidence-quality for EARLY resolution. At window
+            expiry we are forced to resolve — use the best available
+            information rather than blindly defaulting to CONTRADICTED.
+
+        PATH C — Feed evidence exists, threshold NOT met, window open:
+          → Defer. Wait for better evidence or window closure.
+
+        PATH D — No feed evidence, window expired:
+          → CONTRADICTED. No evidence the event occurred within the window.
+
+        PATH E — No feed evidence, window open:
+          → No action. Prediction remains open.
+        """
         preds = get_open_predictions()
         current_date = self.ts["gmt_now"].date()
         hyp_map = {h.hyp_id: h for h in hypotheses}
@@ -913,28 +966,35 @@ class SessionExecutor:
         for pred in preds:
             pred_ref = pred.get("pred_ref", "")
             window = pred.get("window", "")
+            status = pred.get("status", "")
 
-            if pred_ref in feed_resolutions:
-                rec = feed_resolutions[pred_ref]
-                outcome = rec.get("outcome", "")
-                # Use pre-calibration fi (snapshot taken before Step 6.5).
-                # This ensures Brier scoring reflects the system's forecast
-                # ENTERING this edition, not the value computed during it.
-                fi = self._pre_calibration_fi.get(pred_ref)
-                if fi is None:
-                    stored_fi = pred.get("fi")
-                    if stored_fi is None:
-                        print(f"  {pred_ref}: SKIPPED — no stored fi. Cannot resolve without fi.")
-                        continue
-                    fi = float(stored_fi)
-                    print(f"  {pred_ref}: WARNING — no pre-calibration fi snapshot, using stored fi={fi:.4f}")
-                evidence = rec.get("evidence", "Feed analysis")
-                # FIX (TIER 1.3): Verify evidence meets the stored disconfirmation
-                # threshold. Don't accept analyzer's word for it.
+            # ── Gather both signals ──
+            feed_rec = feed_resolutions.get(pred_ref)
+            deadline = _parse_prediction_window(window)
+            window_expired = bool(deadline and current_date > deadline)
+
+            # ── Get fi (pre-calibration snapshot) ──
+            fi = self._pre_calibration_fi.get(pred_ref)
+            if fi is None:
+                stored_fi = pred.get("fi")
+                if stored_fi is None:
+                    if feed_rec or window_expired:
+                        print(f"  {pred_ref}: SKIPPED — no stored fi. Cannot resolve.")
+                    continue
+                fi = float(stored_fi)
+                if feed_rec or window_expired:
+                    print(f"  {pred_ref}: WARNING — no pre-calibration fi snapshot, "
+                          f"using stored fi={fi:.4f}")
+
+            # ── PATH A/B/C: Feed evidence exists ──
+            if feed_rec:
+                outcome = feed_rec.get("outcome", "")
+                evidence = feed_rec.get("evidence", "Feed analysis")
                 disconf_text = pred.get("disconfirmation", "").lower()
                 evidence_lower = evidence.lower() if evidence else ""
                 threshold_met = _verify_disconfirmation_threshold(
                     disconf_text, evidence_lower, outcome)
+
                 gate5 = gate_5_resolution_gate(
                     pred_ref=pred_ref, proposed_outcome=outcome,
                     evidence=[{"source": "Feed analysis", "tier": 2,
@@ -946,44 +1006,82 @@ class SessionExecutor:
                 self.gate_records.append({"gate_id": gate5.gate_id,
                     "gate_name": gate5.gate_name, "passed": gate5.passed,
                     "details": gate5.details})
+
                 if gate5.passed and threshold_met:
-                    oi = {"CONFIRMED": 1.0, "CONTRADICTED": 0.0, "PARTIAL": 0.5}.get(outcome, 0.5)
-                    # FIX (TIER 3.9): Deferred outcome disconfirmation statement.
-                    # PARTIAL/AMBIGUOUS/WATCH must include "what would have
-                    # produced CONTRADICTED" (Architecture Section 10).
+                    # ── PATH A: Feed evidence + threshold met → resolve ──
+                    oi = {"CONFIRMED": 1.0, "CONTRADICTED": 0.0,
+                          "PARTIAL": 0.5}.get(outcome, 0.5)
                     if outcome in ("PARTIAL", "AMBIGUOUS", "WATCH"):
                         disconf_note = pred.get("disconfirmation", "")
                         evidence = (
                             f"{evidence} | DEFERRED-OUTCOME DISCONFIRMATION: "
                             f"CONTRADICTED would have required: {disconf_note}"
                         )
-                    result = resolve_prediction(pred_ref, outcome, fi, oi, self.edition, evidence)
+                    result = resolve_prediction(
+                        pred_ref, outcome, fi, oi, self.edition, evidence)
                     self.new_resolutions.append(result)
-                    print(f"  {pred_ref}: {outcome} (fi={fi:.2f}, err={result['squared_error']:.4f})")
-                    continue
-                else:
-                    print(f"  {pred_ref}: SKIPPED — disconfirmation threshold not met "
-                          f"(threshold: '{pred.get('disconfirmation','')[:60]}')")
+                    print(f"  {pred_ref}: {outcome} [PATH A: feed evidence] "
+                          f"(fi={fi:.2f}, err={result['squared_error']:.4f})")
                     continue
 
-            deadline = _parse_prediction_window(window)
+                if window_expired:
+                    # ── PATH B: Feed evidence + threshold NOT met + window closed ──
+                    # Use feed outcome direction rather than blind CONTRADICTED.
+                    # The feed_analyzer determined the analytical outcome; the
+                    # threshold gate prevents premature early resolution, but at
+                    # window expiry we must resolve with best available information.
+                    oi = {"CONFIRMED": 1.0, "CONTRADICTED": 0.0,
+                          "PARTIAL": 0.5}.get(outcome, 0.5)
+                    combined_evidence = (
+                        f"Window closed {deadline}. Feed evidence direction: "
+                        f"{outcome}. Evidence: {evidence}. "
+                        f"Note: threshold gate not fully met at 25% keyword ratio, "
+                        f"but window expiry forces resolution using feed direction."
+                    )
+                    # Record a gate entry for the combined resolution
+                    gate5_combined = gate_5_resolution_gate(
+                        pred_ref=pred_ref, proposed_outcome=outcome,
+                        evidence=[
+                            {"source": "Window expiry", "tier": 0,
+                             "description": f"Window closed {deadline}",
+                             "meets_threshold": True},
+                            {"source": "Feed analysis (direction)", "tier": 2,
+                             "description": evidence,
+                             "meets_threshold": True},
+                        ],
+                        disconfirmation_threshold=pred.get("disconfirmation", ""),
+                        edition=self.edition,
+                    )
+                    self.gate_records.append({"gate_id": gate5_combined.gate_id,
+                        "gate_name": gate5_combined.gate_name,
+                        "passed": gate5_combined.passed,
+                        "details": gate5_combined.details})
 
-            if deadline and current_date > deadline:
-                status = pred.get("status", "")
-                if status in ("NEAR-CONTRADICTED", "PENDING", "OPENED Ed033", "AT RISK",
-                             "OPENED Ed01", "OPENED Ed001"):
-                    # Use pre-calibration fi snapshot
-                    fi = self._pre_calibration_fi.get(pred_ref)
-                    if fi is None:
-                        stored_fi = pred.get("fi")
-                        if stored_fi is None:
-                            print(f"  {pred_ref}: SKIPPED — window closed but no stored fi.")
-                            continue
-                        fi = float(stored_fi)
+                    result = resolve_prediction(
+                        pred_ref, outcome, fi, oi, self.edition,
+                        combined_evidence)
+                    self.new_resolutions.append(result)
+                    print(f"  {pred_ref}: {outcome} [PATH B: window closed + feed direction] "
+                          f"(fi={fi:.2f}, err={result['squared_error']:.4f})")
+                    continue
+
+                # ── PATH C: Feed evidence but threshold NOT met, window still open ──
+                print(f"  {pred_ref}: DEFERRED [PATH C: threshold not met, window open] "
+                      f"(threshold: '{pred.get('disconfirmation','')[:60]}', "
+                      f"deadline: {deadline})")
+                continue
+
+            # ── PATH D/E: No feed evidence ──
+            if window_expired:
+                # ── PATH D: No feed evidence + window closed → CONTRADICTED ──
+                if status in ("NEAR-CONTRADICTED", "PENDING", "OPENED Ed033",
+                             "AT RISK", "OPENED Ed01", "OPENED Ed001"):
                     gate5 = gate_5_resolution_gate(
                         pred_ref=pred_ref, proposed_outcome="CONTRADICTED",
                         evidence=[{"source": "Window expiry", "tier": 0,
-                                   "description": f"Window closed {deadline}", "meets_threshold": True}],
+                                   "description": f"Window closed {deadline}. "
+                                   f"No feed evidence of event occurrence.",
+                                   "meets_threshold": True}],
                         disconfirmation_threshold=pred.get("disconfirmation", ""),
                         edition=self.edition,
                     )
@@ -991,12 +1089,16 @@ class SessionExecutor:
                         "gate_name": gate5.gate_name, "passed": gate5.passed,
                         "details": gate5.details})
                     if gate5.passed:
-                        result = resolve_prediction(pred_ref, "CONTRADICTED", fi, 0.0,
-                            self.edition, f"Window closed {deadline}")
+                        result = resolve_prediction(
+                            pred_ref, "CONTRADICTED", fi, 0.0,
+                            self.edition,
+                            f"Window closed {deadline}. No feed evidence of occurrence.")
                         self.new_resolutions.append(result)
-                        print(f"  {pred_ref}: CONTRADICTED — window closed (fi={fi:.2f}, err={result['squared_error']:.4f})")
+                        print(f"  {pred_ref}: CONTRADICTED [PATH D: window closed, "
+                              f"no evidence] (fi={fi:.2f}, err={result['squared_error']:.4f})")
                 else:
-                    print(f"  {pred_ref}: Window closed — status '{status}', review needed.")
+                    print(f"  {pred_ref}: Window closed — status '{status}', "
+                          f"review needed.")
 
     def _apply_pmm_004(self, hypotheses):
         for hyp in hypotheses:

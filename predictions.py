@@ -131,34 +131,74 @@ def resolve_prediction(
 ) -> Dict:
     """Resolve a prediction and add to Brier table.
 
-    Returns the Brier contribution.
+    Writes to three tables atomically:
+      1. predictions_open  — UPDATE status to RESOLVED
+      2. predictions_resolved — INSERT resolution record
+      3. brier_table — INSERT scoring entry
+
+    All three writes are wrapped in a single transaction. If any
+    write fails, the entire transaction rolls back and an exception
+    propagates to the caller. No partial state is possible.
+
+    Returns the Brier contribution dict.
     """
+    # ── Input validation ──
+    valid_outcomes = ("CONFIRMED", "CONTRADICTED", "PARTIAL", "AMBIGUOUS")
+    if outcome not in valid_outcomes:
+        raise ValueError(
+            f"resolve_prediction: invalid outcome '{outcome}' for {pred_ref}. "
+            f"Must be one of {valid_outcomes}."
+        )
+    if fi is None or not isinstance(fi, (int, float)):
+        raise ValueError(
+            f"resolve_prediction: fi must be a number, got {fi!r} for {pred_ref}."
+        )
+    if oi is None or not isinstance(oi, (int, float)):
+        raise ValueError(
+            f"resolve_prediction: oi must be a number, got {oi!r} for {pred_ref}."
+        )
+
     squared_error = (fi - oi) ** 2
 
-    # Update predictions_open → mark resolved
     from persistence import get_connection
     conn = get_connection()
-    conn.execute("""UPDATE predictions_open SET
-        outcome = ?, fi = ?, oi = ?, brier_contribution = ?,
-        resolution_edition = ?, status = ?
-        WHERE pred_ref = ?""",
-        (outcome, fi, oi, squared_error, edition,
-         f"RESOLVED Ed{edition:03d}", pred_ref))
+    try:
+        # Write 1: UPDATE predictions_open → mark resolved
+        cursor = conn.execute("""UPDATE predictions_open SET
+            outcome = ?, fi = ?, oi = ?, brier_contribution = ?,
+            resolution_edition = ?, status = ?
+            WHERE pred_ref = ?""",
+            (outcome, fi, oi, squared_error, edition,
+             f"RESOLVED Ed{edition:03d}", pred_ref))
+        if cursor.rowcount == 0:
+            raise RuntimeError(
+                f"resolve_prediction: UPDATE predictions_open matched 0 rows "
+                f"for pred_ref='{pred_ref}'. Prediction may not exist in DB."
+            )
 
-    # Insert into resolved log
-    conn.execute("""INSERT OR REPLACE INTO predictions_resolved
-        (pred_ref, outcome, notes, fi, oi, brier_contribution, resolution_edition)
-        VALUES (?,?,?,?,?,?,?)""",
-        (pred_ref, outcome, notes, fi, oi, squared_error, edition))
+        # Write 2: INSERT into resolved log
+        conn.execute("""INSERT OR REPLACE INTO predictions_resolved
+            (pred_ref, outcome, notes, fi, oi, brier_contribution, resolution_edition)
+            VALUES (?,?,?,?,?,?,?)""",
+            (pred_ref, outcome, notes, fi, oi, squared_error, edition))
 
-    # Insert into Brier table
-    conn.execute("""INSERT INTO brier_table
-        (pred_ref, fi, oi, squared_error, edition, notes)
-        VALUES (?,?,?,?,?,?)""",
-        (pred_ref, fi, oi, squared_error, edition, notes))
+        # Write 3: INSERT into Brier table
+        conn.execute("""INSERT INTO brier_table
+            (pred_ref, fi, oi, squared_error, edition, notes)
+            VALUES (?,?,?,?,?,?)""",
+            (pred_ref, fi, oi, squared_error, edition, notes))
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        print(f"    → PERSISTED: {pred_ref} {outcome} fi={fi:.4f} oi={oi:.1f} "
+              f"BS_contribution={squared_error:.4f} (3/3 writes OK)")
+
+    except Exception as e:
+        conn.rollback()
+        print(f"    → PERSISTENCE FAILURE for {pred_ref}: {e}")
+        print(f"    → Transaction rolled back. No partial state written.")
+        raise
+    finally:
+        conn.close()
 
     return {
         "pred_ref": pred_ref,

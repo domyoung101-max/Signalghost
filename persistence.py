@@ -450,7 +450,14 @@ def get_all_pmm() -> List[Dict]:
 
 
 def get_open_predictions() -> List[Dict]:
-    return fetch_all("predictions_open")
+    """Return only predictions that are still open (not resolved).
+
+    predictions_open stores ALL predictions, including resolved ones
+    (their status is updated to 'RESOLVED EdNNN'). This function
+    filters to return only genuinely open predictions.
+    """
+    return fetch_all("predictions_open",
+                     "status NOT LIKE 'RESOLVED%'", ())
 
 
 def get_resolved_predictions() -> List[Dict]:

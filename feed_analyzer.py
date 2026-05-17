@@ -549,7 +549,7 @@ def extract_carry_forward_facts(
         except (TypeError, ValueError):
             edition_age = 0
 
-        if edition_age >= 5:
+        if edition_age >= 3:
             continue
 
         staleness_label, ed_action = grade_staleness(edition_age)

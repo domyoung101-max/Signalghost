@@ -99,6 +99,7 @@ def generate_session_state(
     lines.append(
         f"- Current: **BS = {brier_data.get('brier_score', 'N/A')} "
         f"(n={brier_data.get('brier_n', 0)}, {brier_data.get('brier_status', 'N/A')})**"
+        f"\n- Brier Skill Score: **BSS = {brier_data.get('brier_skill_score', 'N/A')}** — {brier_data.get('brier_skill_prose', 'Pending')}"
     )
     lines.append("")
     lines.append("-----")
@@ -295,6 +296,7 @@ def generate_session_state(
     lines.append(
         f"- Brier Score: {brier_data.get('brier_score','N/A')} "
         f"(n={brier_data.get('brier_n',0)}, {brier_data.get('brier_status','N/A')})"
+        f"\n- Brier Skill Score (BSS): {brier_data.get('brier_skill_score','N/A')} — {brier_data.get('brier_skill_prose', 'Pending')}"
     )
     lines.append(
         f"- Log Score: {brier_data.get('log_score','INDICATIVE')}"

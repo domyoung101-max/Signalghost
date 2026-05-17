@@ -712,6 +712,7 @@ class SessionExecutor:
         print(f"EDITION {self.edition:03d} COMPLETE")
         print(f"  Brier Score: {scores['brier_score']} (n={scores['brier_n']})")
         print(f"  Status: {scores['brier_status']}")
+        print(f"  Brier Skill Score: {scores['brier_skill_score']} ({scores['brier_skill_prose']})")
         print(f"  Gates: {len(self.gate_records)} checked")
         print(f"  Deviation Audit: {passed}/{len(self.deviation_results)}")
         print(f"  Predictions resolved: {len(self.new_resolutions)}")

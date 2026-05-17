@@ -12,7 +12,7 @@ Implements:
 import math
 from typing import List, Dict, Optional, Tuple
 from config import (
-    BS_TARGET_OPERATIONAL, BS_TARGET_SUSTAINED, BS_TARGET_ELITE,
+    BS_TARGET_OPERATIONAL, BS_TARGET_SUSTAINED, BS_TARGET_ELITE, BSS_REFERENCE,
     LS_BASELINE, SS_BASELINE,
     PMM_004_ADJUSTMENT_PP,
     PredictionOutcome, OUTCOME_VALUES,
@@ -99,10 +99,14 @@ def compute_all_scores() -> Dict:
     ls, ls_n = compute_log_score(rows)
     ss, ss_n = compute_spherical_score(rows)
 
+    bss = 1 - (bs / BSS_REFERENCE) if bs_n > 0 else 0.0
+
     return {
         "brier_score": round(bs, 4),
         "brier_n": bs_n,
         "brier_status": _bs_status(bs),
+        "brier_skill_score": round(bss, 4),
+        "brier_skill_prose": _bss_prose(bss, bs_n),
         "log_score": round(ls, 4),
         "log_n": ls_n,
         "spherical_score": round(ss, 4),
@@ -119,7 +123,25 @@ def _bs_status(bs: float) -> str:
         return "OPERATIONAL"
     else:
         return "DEGRADED"
-
+    
+def _bss_prose(bss: float, n: int) -> str:
+    """Generate concise prose interpretation of Brier Skill Score."""
+    if n < 1:
+        return "No resolved predictions. BSS pending."
+    if n < 5:
+        qualifier = "Early-stage assessment"
+    elif n < 15:
+        qualifier = "Developing track record"
+    else:
+        qualifier = "Established baseline"
+    if bss >= 0.6:
+        return f"{qualifier}: substantial skill over coin-flip ({bss:.1%} improvement). System delivers strong predictive value."
+    elif bss >= 0.3:
+        return f"{qualifier}: moderate skill over coin-flip ({bss:.1%} improvement). Forecasts outperform guessing but calibration gaps remain."
+    elif bss >= 0.0:
+        return f"{qualifier}: marginal skill over coin-flip ({bss:.1%} improvement). System performs above baseline but within noise range at low n."
+    else:
+        return f"{qualifier}: negative skill ({bss:.1%}). System currently underperforms coin-flip baseline. Calibration review required."
 
 def resolve_prediction(
     pred_ref: str,

@@ -627,6 +627,11 @@ class PDFBuilder:
                     f"(n={scores.get('brier_n', 0)}, {scores.get('brier_status', 'N/A')})",
                     styles['body_bold']))
                 story.append(Spacer(1, 3*mm))
+                story.append(Paragraph(
+                    f"Brier Skill Score (BSS): {scores.get('brier_skill_score', 'N/A')} — "
+                    f"{scores.get('brier_skill_prose', 'Pending')}",
+                    styles['body']))
+                story.append(Spacer(1, 3*mm))
 
                 # Point estimate table (Mandatory Item 7)
                 for s2 in self.sections:
@@ -910,6 +915,7 @@ class PDFBuilder:
                 lines.append("--- BRIER SCORE ---")
                 s = section["scores"]
                 lines.append(f"Brier Score: {s.get('brier_score','N/A')} (n={s.get('brier_n',0)}, {s.get('brier_status','')})")
+                lines.append(f"Brier Skill Score (BSS): {s.get('brier_skill_score','N/A')} — {s.get('brier_skill_prose','Pending')}")
                 for r in section["brier_rows"]:
                     lines.append(f"  {r.get('pred_ref','')}: fi={r.get('fi',0):.2f} oi={r.get('oi',0):.1f} err={r.get('squared_error',0):.4f}")
                 lines.append("")

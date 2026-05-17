@@ -459,8 +459,8 @@ class PDFBuilder:
                     styles['body']))
                 cal_rows = [[e.get("hyp_id",""), e.get("prior_range",""),
                              e.get("new_range",""), f"{e.get('point_estimate',0):.2f}",
-                             e.get("pipeline_stages","")[:40],
-                             e.get("correction_basis","")[:50]]
+                             e.get("pipeline_stages","")[:80],
+                             e.get("correction_basis","")[:500]]
                             for e in section["entries"]]
                 story.append(simple_table(
                     ["Hypothesis", "Prior", "New", "Pt Est", "Pipeline", "Basis"],
@@ -583,8 +583,8 @@ class PDFBuilder:
                 "CARRY-FORWARD FACTS — STATUS AT {0}".format(self.gmt_str),
                 styles['section_head']))
             story.append(hr())
-            cf_rows = [[f.get("fact","")[:60], f.get("last_verified","")[:30],
-                        f.get("ed_action","")[:40]]
+            cf_rows = [[f.get("fact","")[:500], f.get("last_verified","")[:80],
+                        f.get("ed_action","")[:200]]
                        for f in self.carry_forward_facts[:20]]
             story.append(simple_table(
                 ["FACT", "LAST VERIFIED", "NEXT ACTION"],

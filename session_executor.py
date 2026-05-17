@@ -846,7 +846,7 @@ class SessionExecutor:
             # Build correction basis from LRs and key pipeline notes
             basis_parts = []
             if lrs:
-                basis_parts.append(f"Bayesian: {', '.join(lr['description'][:40] for lr in lrs)}")
+                basis_parts.append(f"Bayesian: {', '.join(lr['description'][:100] for lr in lrs)}")
             if result.get("change_point_flag"):
                 basis_parts.append(f"CP flag z={result['z_score']:.2f}")
             if result.get("applied_propagations"):

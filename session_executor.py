@@ -144,6 +144,111 @@ def _verify_disconfirmation_threshold(
     return match_ratio >= 0.25
 
 
+def _verify_resolution_via_web_search(pred_ref: str, flag: str, window: str,
+                                       proposed_outcome: str) -> dict:
+    """Independent web search verification of a proposed prediction resolution.
+
+    Before any prediction resolution is committed to the DB, this function
+    runs a TARGETED web search to verify the feed_analyzer's conclusion.
+    This prevents the feed_analyzer's RSS-based judgment from being the
+    sole basis for irreversible Brier score entries.
+
+    Returns dict with:
+        verified    : bool — True if web search agrees with proposed outcome
+        web_outcome : str  — CONFIRMED/CONTRADICTED/INCONCLUSIVE
+        web_evidence: str  — summary of web findings
+        should_block: bool — True if resolution should be blocked
+    """
+    import os
+
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        print(f"    [VERIFY] API key unavailable — skipping web verification")
+        return {"verified": True, "web_outcome": proposed_outcome,
+                "web_evidence": "Verification skipped (no API key)",
+                "should_block": False}
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=key)
+
+        prompt = (
+            f"PREDICTION VERIFICATION REQUEST\n\n"
+            f"Prediction: {flag}\n"
+            f"Window: {window}\n"
+            f"Proposed resolution: {proposed_outcome}\n\n"
+            f"TASK: Search the web for current news about whether this "
+            f"event actually occurred within the stated window.\n\n"
+            f"Answer with EXACTLY one of:\n"
+            f"- CONFIRMED — if the event DID occur (with brief source citation)\n"
+            f"- CONTRADICTED — if the event did NOT occur (with brief explanation)\n"
+            f"- INCONCLUSIVE — if you cannot determine from available sources\n\n"
+            f"Format your response as:\n"
+            f"OUTCOME: [CONFIRMED/CONTRADICTED/INCONCLUSIVE]\n"
+            f"EVIDENCE: [one sentence with source name and date]\n"
+            f"Do NOT add any other text."
+        )
+
+        message = client.messages.create(
+            model="claude-sonnet-4-5",
+            max_tokens=200,
+            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            system=(
+                "You are a fact-checker. Search the web and verify whether "
+                "a predicted event occurred. Be precise. Cite sources."
+            ),
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        full_text = ""
+        for block in message.content:
+            if hasattr(block, "text"):
+                full_text += block.text
+
+        response = full_text.strip()
+
+        # Parse the response
+        web_outcome = "INCONCLUSIVE"
+        web_evidence = response
+        for line in response.split("\n"):
+            line_upper = line.strip().upper()
+            if line_upper.startswith("OUTCOME:"):
+                val = line_upper.replace("OUTCOME:", "").strip()
+                if "CONFIRMED" in val:
+                    web_outcome = "CONFIRMED"
+                elif "CONTRADICTED" in val:
+                    web_outcome = "CONTRADICTED"
+                else:
+                    web_outcome = "INCONCLUSIVE"
+            if line.strip().upper().startswith("EVIDENCE:"):
+                web_evidence = line.strip()[9:].strip()
+
+        # Block if web search DISAGREES with proposed outcome
+        if proposed_outcome == "CONFIRMED" and web_outcome == "CONTRADICTED":
+            should_block = True
+        elif proposed_outcome == "CONTRADICTED" and web_outcome == "CONFIRMED":
+            should_block = True
+        else:
+            should_block = False
+
+        verified = not should_block
+        print(f"    [VERIFY] {pred_ref}: web={web_outcome}, "
+              f"proposed={proposed_outcome}, "
+              f"{'AGREE' if verified else 'DISAGREE — BLOCKING'}")
+        if web_evidence:
+            print(f"    [VERIFY] Evidence: {web_evidence[:150]}")
+
+        return {"verified": verified, "web_outcome": web_outcome,
+                "web_evidence": web_evidence, "should_block": should_block}
+
+    except Exception as e:
+        print(f"    [VERIFY] Web verification error: {str(e)[:100]}")
+        print(f"    [VERIFY] Proceeding without verification (fail-open)")
+        return {"verified": True, "web_outcome": "ERROR",
+                "web_evidence": f"Verification failed: {str(e)[:100]}",
+                "should_block": False}
+
+
 # ── CASE-SPECIFIC FEED FILTERING (Gap 10 fix) ─────────────────────────────────
 
 # Keywords per case for relevance scoring.  Tier 1 feeds always pass through
@@ -1008,7 +1113,20 @@ class SessionExecutor:
                     "details": gate5.details})
 
                 if gate5.passed and threshold_met:
-                    # ── PATH A: Feed evidence + threshold met → resolve ──
+                    # ── PATH A: Feed evidence + threshold met → verify then resolve ──
+                    v = _verify_resolution_via_web_search(
+                        pred_ref, pred.get("flag", ""), window, outcome)
+                    if v["should_block"]:
+                        print(f"  {pred_ref}: BLOCKED [PATH A: web verification disagrees] "
+                              f"feed={outcome}, web={v['web_outcome']}")
+                        print(f"    → Resolution deferred for operator review.")
+                        self.gate_records.append({"gate_id": "Gate 5-VERIFY",
+                            "gate_name": "Web Search Verification",
+                            "passed": False,
+                            "details": f"{pred_ref}: feed={outcome} vs web={v['web_outcome']}. "
+                                       f"Evidence: {v['web_evidence'][:200]}"})
+                        continue
+
                     oi = {"CONFIRMED": 1.0, "CONTRADICTED": 0.0,
                           "PARTIAL": 0.5}.get(outcome, 0.5)
                     if outcome in ("PARTIAL", "AMBIGUOUS", "WATCH"):
@@ -1017,6 +1135,7 @@ class SessionExecutor:
                             f"{evidence} | DEFERRED-OUTCOME DISCONFIRMATION: "
                             f"CONTRADICTED would have required: {disconf_note}"
                         )
+                    evidence = f"{evidence} | VERIFIED: web search {v['web_outcome']} — {v['web_evidence'][:200]}"
                     result = resolve_prediction(
                         pred_ref, outcome, fi, oi, self.edition, evidence)
                     self.new_resolutions.append(result)
@@ -1026,17 +1145,23 @@ class SessionExecutor:
 
                 if window_expired:
                     # ── PATH B: Feed evidence + threshold NOT met + window closed ──
-                    # Use feed outcome direction rather than blind CONTRADICTED.
-                    # The feed_analyzer determined the analytical outcome; the
-                    # threshold gate prevents premature early resolution, but at
-                    # window expiry we must resolve with best available information.
+                    # Web verification — CRITICAL here because feed evidence was
+                    # weak and window forces resolution. Web can OVERRIDE feed.
+                    v = _verify_resolution_via_web_search(
+                        pred_ref, pred.get("flag", ""), window, outcome)
+
+                    if v["should_block"] and v["web_outcome"] in ("CONFIRMED", "CONTRADICTED"):
+                        print(f"  {pred_ref}: WEB OVERRIDE [PATH B: web={v['web_outcome']} "
+                              f"overrides feed={outcome}]")
+                        outcome = v["web_outcome"]
+
                     oi = {"CONFIRMED": 1.0, "CONTRADICTED": 0.0,
                           "PARTIAL": 0.5}.get(outcome, 0.5)
                     combined_evidence = (
-                        f"Window closed {deadline}. Feed evidence direction: "
-                        f"{outcome}. Evidence: {evidence}. "
-                        f"Note: threshold gate not fully met at 25% keyword ratio, "
-                        f"but window expiry forces resolution using feed direction."
+                        f"Window closed {deadline}. "
+                        f"Feed evidence direction: {outcome}. "
+                        f"Web verification: {v['web_outcome']} — {v['web_evidence'][:200]}. "
+                        f"Evidence: {evidence}."
                     )
                     # Record a gate entry for the combined resolution
                     gate5_combined = gate_5_resolution_gate(
@@ -1073,14 +1198,32 @@ class SessionExecutor:
 
             # ── PATH D/E: No feed evidence ──
             if window_expired:
-                # ── PATH D: No feed evidence + window closed → CONTRADICTED ──
+                # ── PATH D: No feed evidence + window closed ──
+                # Web verification CRITICAL — RSS may have missed evidence.
                 if status in ("NEAR-CONTRADICTED", "PENDING", "OPENED Ed033",
                              "AT RISK", "OPENED Ed01", "OPENED Ed001"):
+                    v = _verify_resolution_via_web_search(
+                        pred_ref, pred.get("flag", ""), window, "CONTRADICTED")
+
+                    if v["web_outcome"] == "CONFIRMED":
+                        print(f"  {pred_ref}: WEB OVERRIDE [PATH D: web=CONFIRMED, "
+                              f"overriding default CONTRADICTED]")
+                        outcome_d = "CONFIRMED"
+                        oi_d = 1.0
+                    else:
+                        outcome_d = "CONTRADICTED"
+                        oi_d = 0.0
+
+                    evidence_d = (
+                        f"Window closed {deadline}. "
+                        f"Web verification: {v['web_outcome']} — {v['web_evidence'][:200]}. "
+                        f"{'No feed evidence in RSS sweep.' if outcome_d == 'CONTRADICTED' else 'RSS missed event but web search confirmed occurrence.'}"
+                    )
+
                     gate5 = gate_5_resolution_gate(
-                        pred_ref=pred_ref, proposed_outcome="CONTRADICTED",
-                        evidence=[{"source": "Window expiry", "tier": 0,
-                                   "description": f"Window closed {deadline}. "
-                                   f"No feed evidence of event occurrence.",
+                        pred_ref=pred_ref, proposed_outcome=outcome_d,
+                        evidence=[{"source": "Window expiry + web verification", "tier": 0,
+                                   "description": evidence_d,
                                    "meets_threshold": True}],
                         disconfirmation_threshold=pred.get("disconfirmation", ""),
                         edition=self.edition,
@@ -1090,12 +1233,12 @@ class SessionExecutor:
                         "details": gate5.details})
                     if gate5.passed:
                         result = resolve_prediction(
-                            pred_ref, "CONTRADICTED", fi, 0.0,
-                            self.edition,
-                            f"Window closed {deadline}. No feed evidence of occurrence.")
+                            pred_ref, outcome_d, fi, oi_d,
+                            self.edition, evidence_d)
                         self.new_resolutions.append(result)
-                        print(f"  {pred_ref}: CONTRADICTED [PATH D: window closed, "
-                              f"no evidence] (fi={fi:.2f}, err={result['squared_error']:.4f})")
+                        print(f"  {pred_ref}: {outcome_d} [PATH D: window closed, "
+                              f"web={v['web_outcome']}] "
+                              f"(fi={fi:.2f}, err={result['squared_error']:.4f})")
                 else:
                     print(f"  {pred_ref}: Window closed — status '{status}', "
                           f"review needed.")

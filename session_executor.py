@@ -1473,6 +1473,9 @@ class SessionExecutor:
         # Carry-forward facts
         self.carry_forward_facts_updated = extract_carry_forward_facts(
             feed_results, carry_facts, self.ts["gmt_str"])
+        print(f"  Carry-forward facts: {len(self.carry_forward_facts_updated)} total, "
+              f"{sum(1 for f in self.carry_forward_facts_updated if f.get('staleness_editions', 0) == 0)} new, "
+              f"{sum(1 for f in self.carry_forward_facts_updated if f.get('staleness_editions', 0) > 0)} carried")
 
         # HPT entry generation (Gap 2 fix)
         # Extract dominant heuristics from each case narrative and insert HPT row
@@ -1880,7 +1883,12 @@ class SessionExecutor:
                 "no_observable_prep_action": 1 if h.no_observable_prep_action else 0,
                 "independent_chains": h.independent_chains,
                 "single_cluster_h5": 1 if h.single_cluster_h5 else 0})
-        # Persist carry-forward facts
+        # Persist carry-forward facts — clear old facts first to prevent accumulation
+        from persistence import get_connection
+        _cf_conn = get_connection()
+        _cf_conn.execute("DELETE FROM carry_forward_facts")
+        _cf_conn.commit()
+        _cf_conn.close()
         for cf in self.carry_forward_facts_updated:
             insert_row("carry_forward_facts", {"fact": cf.get("fact", ""),
                 "last_verified": cf.get("last_verified", ""),

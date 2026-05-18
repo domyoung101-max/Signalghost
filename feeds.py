@@ -36,6 +36,7 @@ MAX_WORKERS = 6
 
 FALLBACK_MAX_TOKENS = min(800, NARRATION_DEFAULT_MAX_TOKENS)
 FALLBACK_MAX_CHARS = 3000
+SUPPLEMENTARY_MAX_CHARS = 5000  # Extended limit for Tier 1-2 with adversarial queries
 
 
 def get_all_feeds() -> List[Dict[str, object]]:
@@ -128,6 +129,60 @@ TOPIC_KEYWORDS = {
 
 def _get_api_key() -> Optional[str]:
     return os.environ.get("ANTHROPIC_API_KEY")
+
+
+def _generate_adversarial_queries() -> List[str]:
+    """Generate prediction-aware queries from open predictions.
+
+    Reads open predictions + disconfirmation thresholds from DB,
+    produces targeted search queries that hunt for BOTH confirmation
+    and contradiction signals — with contradiction weighted first.
+
+    Returns a flat list of query strings ready for web search.
+    """
+    try:
+        from persistence import get_open_predictions
+        preds = get_open_predictions()
+    except Exception:
+        return []
+
+    queries = []
+    for p in preds:
+        if "RESOLVED" in (p.get("status") or ""):
+            continue
+        flag = p.get("flag", "")
+        res_no = p.get("resolution_no", "") or ""
+        res_yes = p.get("resolution_yes", "") or ""
+        pred_ref = p.get("pred_ref", "")
+
+        # Contradiction queries FIRST (adversarial — hunting to break
+        # the system's own position)
+        if "memo" in flag.lower() or "framework" in flag.lower():
+            queries.append("US rejects Iran deal proposal 2026")
+            queries.append("Iran negotiations fail collapse 2026")
+        if "uranium" in flag.lower() or "stockpile" in flag.lower():
+            queries.append("IAEA Iran uranium stockpile remains 2026")
+            queries.append("Iran rejects uranium transfer export 2026")
+        if "irgc" in flag.lower() or "snsc" in flag.lower():
+            queries.append("Salami contradicts Araghchi Iran 2026")
+            queries.append("IRGC opposes Iran diplomacy talks 2026")
+
+        # Confirmation queries (standard — tracking positive resolution)
+        if "memo" in flag.lower():
+            queries.append("Iran US framework memo signed deal 2026")
+        if "uranium" in flag.lower():
+            queries.append("IAEA Iran uranium transfer shipment 2026")
+        if "irgc" in flag.lower() or "endorses" in flag.lower():
+            queries.append("IRGC SNSC endorses Araghchi diplomacy 2026")
+
+    # Deduplicate while preserving order (contradiction-first)
+    seen = set()
+    unique = []
+    for q in queries:
+        if q not in seen:
+            seen.add(q)
+            unique.append(q)
+    return unique
 
 
 def _utc_now() -> datetime:
@@ -331,7 +386,78 @@ def _search_single_feed(feed_name: str, tier: int, query: str) -> Dict:
         }
 
 
-def _process_single_feed(index: int, total: int, feed: Dict[str, object], edition: int, timestamp: str) -> Tuple[int, FeedSweepResult]:
+def _search_supplementary(feed_name: str, tier: int, queries: List[str]) -> str:
+    """Run a batched adversarial query sweep for a Tier 1-2 feed.
+
+    Takes multiple prediction-aware queries and executes them in a
+    single API call. Returns concatenated findings text.
+    Contradiction queries appear first (by construction from
+    _generate_adversarial_queries).
+
+    Cost: ONE API call per Tier 1-2 feed (~11 extra calls per sweep).
+    """
+    key = _get_api_key()
+    if not key or not queries:
+        return ""
+
+    # Cap at 4 queries per feed to control token usage
+    capped = queries[:4]
+    query_block = "\n".join(f"  {i+1}. {q}" for i, q in enumerate(capped))
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=key)
+
+        prompt = (
+            f"Source context: {feed_name}\n\n"
+            f"Run the following {len(capped)} searches and report findings:\n"
+            f"{query_block}\n\n"
+            "For EACH query, use web_search to find the latest evidence "
+            "from the last 48 hours.\n\n"
+            "Output format (STRICT):\n"
+            "- Up to 2 bullet points PER query that returned results.\n"
+            "- Each bullet: ONE factual sentence with actor, action, date, source.\n"
+            "- Skip queries with no results — do NOT write 'no findings' for them.\n"
+            "- NO analysis, NO commentary, NO probabilities.\n"
+            "- If ALL queries return nothing, output exactly: NO NEW FINDINGS\n"
+        )
+
+        message = client.messages.create(
+            model=MODEL_FINAL_NARRATION,
+            max_tokens=FALLBACK_MAX_TOKENS,
+            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            system=(
+                "You are a senior intelligence analyst conducting an adversarial "
+                "evidence sweep. Search for evidence that could CONFIRM or "
+                "CONTRADICT active forecasting predictions. Report only verified "
+                "facts. Maximum 8 bullets total. If nothing found, return: "
+                "NO NEW FINDINGS"
+            ),
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        full_text = ""
+        for block in message.content:
+            if hasattr(block, "text"):
+                full_text += block.text
+
+        result = full_text.strip()
+        if not result or "NO NEW FINDINGS" in result:
+            return ""
+        return result
+
+    except Exception:
+        return ""
+
+
+def _process_single_feed(
+    index: int,
+    total: int,
+    feed: Dict[str, object],
+    edition: int,
+    timestamp: str,
+    adversarial_queries: Optional[List[str]] = None,
+) -> Tuple[int, FeedSweepResult]:
     fname = str(feed["feed_name"])
     tier = int(feed["tier"])
     query = FEED_QUERIES.get(fname, fname)
@@ -340,11 +466,23 @@ def _process_single_feed(index: int, total: int, feed: Dict[str, object], editio
     if raw is None:
         raw = _search_single_feed(fname, tier, query)
 
+    findings = raw.get("findings", "NO FINDINGS")
+
+    # ── ADVERSARIAL SUPPLEMENTARY SWEEP (Tier 1-2 only) ──────────
+    # ONE batched API call per feed with prediction-aware queries.
+    # Contradiction queries appear first by construction.
+    # Cost: ~11 extra API calls per sweep (one per Tier 1-2 feed).
+    if tier <= 2 and adversarial_queries:
+        supplement = _search_supplementary(fname, tier, adversarial_queries)
+        if supplement:
+            findings = (findings + "\n[ADVERSARIAL SWEEP]\n" + supplement)
+            findings = findings[:SUPPLEMENTARY_MAX_CHARS]
+
     fsr = FeedSweepResult(
         feed_name=raw.get("feed_name", fname),
         tier=raw.get("tier", tier),
         checked=raw.get("checked", False),
-        findings=raw.get("findings", "NO FINDINGS"),
+        findings=findings,
         edition=edition,
         timestamp=timestamp,
     )
@@ -357,11 +495,25 @@ def execute_feed_sweep(edition: int, timestamp: str) -> Dict:
     results_by_index: Dict[int, FeedSweepResult] = {}
     unchecked: List[str] = []
 
+    # ── ADVERSARIAL QUERY GENERATION ─────────────────────────────
+    # Generate prediction-aware queries ONCE before sweep starts.
+    # These hunt for confirmation AND contradiction signals aligned
+    # with open prediction disconfirmation thresholds.
+    adv_queries = _generate_adversarial_queries()
+    if adv_queries:
+        print(f" Adversarial queries generated: {len(adv_queries)} "
+              f"(Tier 1-2 feeds will run supplementary searches)")
+    else:
+        print(" No adversarial queries generated (no open predictions or DB unavailable)")
+
     print(f" Launching parallel feed sweep with {MAX_WORKERS} workers...")
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_map = {
-            executor.submit(_process_single_feed, i, len(all_feeds), feed, edition, timestamp): (i, feed)
+            executor.submit(
+                _process_single_feed, i, len(all_feeds), feed, edition, timestamp,
+                adv_queries if int(feed["tier"]) <= 2 else None,
+            ): (i, feed)
             for i, feed in enumerate(all_feeds)
         }
 
@@ -399,6 +551,7 @@ def execute_feed_sweep(edition: int, timestamp: str) -> Dict:
         "all_checked": checked_count == TOTAL_NAMED_FEEDS,
         "bypass_required": checked_count < TOTAL_NAMED_FEEDS,
         "bypass_feeds": unchecked,
+        "adversarial_queries": adv_queries,
     }
 
 

@@ -334,6 +334,22 @@ def init_db():
         in_force TEXT NOT NULL
     )""")
 
+    # ── QUERY PERFORMANCE LOG ─────────────────────────────────────────
+    # Tracks which adversarial queries surfaced prediction-moving
+    # intelligence vs which missed. Feeds back into query strategy
+    # optimisation over time.
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS query_performance (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        edition          INTEGER NOT NULL,
+        query            TEXT NOT NULL,
+        feed_name        TEXT NOT NULL,
+        surfaced_signal  INTEGER DEFAULT 0,
+        pred_ref_hit     TEXT DEFAULT '',
+        signal_summary   TEXT DEFAULT '',
+        created_at       TEXT DEFAULT (datetime('now'))
+    )""")
+
     conn.commit()
 
     # ── MIGRATIONS — add columns to existing tables if missing ──────────
@@ -522,3 +538,79 @@ def get_hypothesis_trend(hyp_ids: List[str] = None) -> Dict[str, List[Dict]]:
             "range_upper": r["range_upper"],
         })
     return trend
+
+
+# ── QUERY PERFORMANCE LOGGING ─────────────────────────────────────────────
+
+def log_query_performance(
+    edition: int,
+    adversarial_queries: List[str],
+    feed_results: List[Dict],
+    key_developments: List[str],
+):
+    """Log which adversarial queries surfaced prediction-moving signals.
+
+    Compares adversarial query terms against key developments identified
+    by feed_analyzer. Queries that contributed to surfacing a development
+    get surfaced_signal=1; others get 0. Over time this builds a record
+    of which query strategies work for which feed/prediction combinations.
+
+    Args:
+        edition: Current edition number.
+        adversarial_queries: List of query strings from the sweep.
+        feed_results: List of {feed_name, tier, findings} dicts.
+        key_developments: List of development summary strings from
+            feed_analyzer output.
+    """
+    if not adversarial_queries:
+        return
+
+    conn = get_connection()
+    devs_blob = " ".join(key_developments).lower()
+
+    # Extract key terms from each query for matching
+    for query in adversarial_queries:
+        query_terms = [t.lower() for t in query.split()
+                       if len(t) > 3 and t.lower() not in
+                       {"2026", "iran", "latest", "today"}]
+
+        # Check which feeds contained adversarial sweep results
+        for fr in feed_results:
+            findings = (fr.get("findings") or "").lower()
+            if "[adversarial sweep]" not in findings:
+                continue
+
+            # Did any key development match this query's terms?
+            hit = any(term in devs_blob for term in query_terms)
+
+            # Identify which prediction this query targeted
+            pred_ref = ""
+            q_lower = query.lower()
+            if "memo" in q_lower or "deal" in q_lower or "framework" in q_lower:
+                pred_ref = "PRED-01-A"
+            elif "uranium" in q_lower or "iaea" in q_lower or "stockpile" in q_lower:
+                pred_ref = "PRED-01-B"
+            elif "salami" in q_lower or "irgc" in q_lower or "snsc" in q_lower:
+                pred_ref = "PRED-01-E"
+
+            signal_summary = ""
+            if hit:
+                # Find matching development
+                for dev in key_developments:
+                    if any(term in dev.lower() for term in query_terms):
+                        signal_summary = dev[:200]
+                        break
+
+            try:
+                conn.execute(
+                    "INSERT INTO query_performance "
+                    "(edition, query, feed_name, surfaced_signal, "
+                    "pred_ref_hit, signal_summary) VALUES (?,?,?,?,?,?)",
+                    (edition, query, fr["feed_name"],
+                     1 if hit else 0, pred_ref, signal_summary),
+                )
+            except Exception:
+                pass
+
+    conn.commit()
+    conn.close()

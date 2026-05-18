@@ -518,6 +518,25 @@ class SessionExecutor:
             print(f"    - {str(dev)[:80]}")
         print()
 
+        # ── STEP 4.5: QUERY PERFORMANCE LOGGING ──────────────────────
+        # Log which adversarial queries surfaced prediction-moving
+        # signals. Feeds self-learning loop for query optimisation.
+        adv_queries = self.sweep_result.get("adversarial_queries", [])
+        if adv_queries:
+            try:
+                from persistence import log_query_performance
+                log_query_performance(
+                    edition=self.edition,
+                    adversarial_queries=adv_queries,
+                    feed_results=[{"feed_name": r.feed_name, "tier": r.tier,
+                                   "findings": r.findings}
+                                  for r in self.sweep_result["results"]],
+                    key_developments=self.feed_analysis.get(
+                        "key_developments", []),
+                )
+            except Exception as e:
+                print(f"  Query performance logging skipped: {e}")
+
         # ── STEP 5: PRE-ANALYSIS GATES ───────────────────────────────────
         print("[STEP 5] Executing pre-analysis gates...")
         carry_facts = fetch_all("carry_forward_facts", "edition = ?", (ed,))

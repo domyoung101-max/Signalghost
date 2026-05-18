@@ -16,6 +16,7 @@ Runs one complete edition in chronological order:
   13. PDF build (10 mandatory items, full branded output)
   14. Session state handover
   15. Persist carry-forward state
+  16. Executive summary (CF-8 — WeasyPrint, 2-page A4)
 """
 
 import datetime
@@ -34,7 +35,11 @@ from gates import (
     execute_pre_analysis_gates, execute_pre_publication_gates,
     execute_per_edition_gate, gate_5_resolution_gate,
 )
-from calibration_pipeline import execute_full_pipeline
+from calibration_pipeline import (
+    execute_full_pipeline,
+    ai_012_5_cross_case_propagation,
+    _reconcile_range_and_point,
+)
 from predictions import (
     compute_all_scores, resolve_prediction, check_pmm_004,
     get_band_for_prediction,
@@ -706,6 +711,22 @@ class SessionExecutor:
         print("  Done.")
         print()
 
+        # ── STEP 16: EXEC SUMMARY (CF-8) ────────────────────────────────
+        print("[STEP 16] Generating executive summary...")
+        try:
+            from exec_summary_builder import render_exec_summary_pdf
+            # Logo dir = directory containing the script (repo root)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            exec_pdf_path = render_exec_summary_pdf(
+                logo_dir=script_dir,
+            )
+            print(f"  Output: {exec_pdf_path}")
+        except Exception as e:
+            exec_pdf_path = None
+            print(f"  WARNING: Exec summary failed: {e}")
+            print("  Edition continues — exec summary is non-blocking.")
+        print()
+
         # ── SUMMARY ──────────────────────────────────────────────────────
         scores = compute_all_scores()
         print("=" * 60)
@@ -718,10 +739,13 @@ class SessionExecutor:
         print(f"  Predictions resolved: {len(self.new_resolutions)}")
         print(f"  PDF: {pdf_path}")
         print(f"  Session State: {ss_path}")
+        if exec_pdf_path:
+            print(f"  Exec Summary: {exec_pdf_path}")
         print("=" * 60)
 
         return {"edition": self.edition, "scores": scores,
                 "pdf_path": pdf_path, "session_state_path": ss_path,
+                "exec_summary_path": exec_pdf_path,
                 "gates": self.gate_records, "deviation_audit": self.deviation_results}
 
     # ══════════════════════════════════════════════════════════════════════
@@ -831,6 +855,7 @@ class SessionExecutor:
                 deltas=deltas, band_errors=band_errors,
                 new_resolutions=resolution_data, q_table=q_table,
                 resolution_for_bandit=None,
+                skip_propagation=True,
             )
 
             # Record pipeline stages applied on the hypothesis
@@ -860,6 +885,57 @@ class SessionExecutor:
             updated.append(out_hyp)
             self.pipeline_log.extend(result["pipeline_log"])
             deltas[hyp.hyp_id] = result["delta_p"]
+
+        # ── BATCH CROSS-CASE PROPAGATION (Stage 7) ───────────────────────
+        # FIX: Run propagation exactly ONCE after all hypotheses have their
+        # individual pipeline estimates. This prevents duplicate application
+        # that occurred when propagation was called inside every per-hypothesis
+        # pipeline iteration — the shared deltas dict caused each rule to
+        # re-fire for every subsequent hypothesis processed.
+        #
+        # Snapshot pre-propagation pt estimates for correction_basis updates.
+        pre_prop_pts = {h.hyp_id: h.point_estimate for h in updated}
+        updated_map = {h.hyp_id: h for h in updated}
+
+        updated_map, applied_props, s7_log = ai_012_5_cross_case_propagation(
+            updated_map, propagation_reg, deltas)
+        self.pipeline_log.append(s7_log)
+        print(f"  [S7 BATCH] {s7_log}")
+
+        # Re-reconcile any hypotheses whose pt moved from propagation,
+        # then update correction_basis and pipeline_stages_applied.
+        for h in updated:
+            h_obj = updated_map[h.hyp_id]
+            if h_obj.point_estimate != pre_prop_pts[h.hyp_id]:
+                # Point estimate changed from propagation — re-reconcile
+                h_obj, reconcile_log = _reconcile_range_and_point(h_obj)
+                self.pipeline_log.append(
+                    f"  {h_obj.hyp_id}: {reconcile_log}")
+                # Append S7 to pipeline stages
+                stages = h_obj.pipeline_stages_applied or ""
+                if "S7" not in stages:
+                    h_obj.pipeline_stages_applied = (
+                        (stages + " S7").strip() if stages else "S7")
+                # Update correction basis with propagation info
+                prop_entries = [p for p in applied_props
+                                if h_obj.hyp_id in p]
+                if prop_entries:
+                    basis = h_obj.correction_basis or ""
+                    prop_text = f"Prop: {'; '.join(prop_entries[:2])}"
+                    if basis and not basis.endswith("."):
+                        basis += "."
+                    h_obj.correction_basis = (
+                        f"{basis} {prop_text}".strip() if basis
+                        else prop_text)
+                    # Update net delta
+                    delta = h_obj.point_estimate - pre_prop_pts.get(
+                        h_obj.hyp_id, h_obj.point_estimate)
+                    if abs(delta) > 0.0005:
+                        h_obj.correction_basis += f". Net {delta:+.3f}"
+
+        # Rebuild updated list from map (preserving order)
+        updated = [updated_map[h.hyp_id] for h in updated]
+
         return updated
 
     def _build_correlation_dict(self):

@@ -612,7 +612,11 @@ class PDFBuilder:
                 pred_rows, [28*mm, 70*mm, 30*mm, 42*mm], styles))
             story.append(Spacer(1, 6*mm))
 
-        story.append(PageBreak())
+        # Conditional page break: only break if less than 80mm remains.
+        # An unconditional PageBreak here caused a blank page 23 when the
+        # preceding sections didn't fill the page after the per-case break.
+        from reportlab.platypus import CondPageBreak
+        story.append(CondPageBreak(80*mm))
 
         # ── BRIER SCORE (Mandatory Item 1) ───────────────────────────────
         for section in self.sections:

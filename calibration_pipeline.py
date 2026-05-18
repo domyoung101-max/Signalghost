@@ -798,8 +798,17 @@ def execute_full_pipeline(
     new_resolutions: List[Dict],
     q_table: Dict[str, Dict],
     resolution_for_bandit: Optional[Dict],
+    skip_propagation: bool = False,
 ) -> Dict:
     """Execute the full 13-stage pipeline for one hypothesis.
+
+    Args:
+        skip_propagation: If True, Stage 7 (cross-case propagation) is
+            deferred — the delta is recorded but propagation is NOT applied.
+            The caller is responsible for running a single batch propagation
+            pass after all hypotheses complete their individual pipelines.
+            This prevents duplicate propagation from the shared deltas dict
+            being re-checked on every per-hypothesis call.
 
     Returns dict with all results and the complete pipeline log.
     """
@@ -841,9 +850,15 @@ def execute_full_pipeline(
     # Stage 7: AI-012-5
     deltas[hyp.hyp_id] = delta_p
     hypotheses_map[hyp.hyp_id] = hyp
-    hypotheses_map, applied_props, s7_log = ai_012_5_cross_case_propagation(
-        hypotheses_map, propagation_register, deltas)
-    hyp = hypotheses_map[hyp.hyp_id]
+    if skip_propagation:
+        # Defer to single batch pass after all hypotheses are processed.
+        # Record delta and update map, but do NOT apply propagation here.
+        applied_props = []
+        s7_log = "S7(AI-012-5): Deferred to post-pipeline batch pass."
+    else:
+        hypotheses_map, applied_props, s7_log = ai_012_5_cross_case_propagation(
+            hypotheses_map, propagation_register, deltas)
+        hyp = hypotheses_map[hyp.hyp_id]
     pipeline_log.append(s7_log)
 
     # Stage 8: AI-012-7
